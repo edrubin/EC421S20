@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Mid-course project</title>
+    <meta charset="utf-8" />
+    <link href="prompt_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="prompt_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="prompt_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+    <script src="prompt_files/kePrint-0.0.1/kePrint.js"></script>
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Mid-course project
+## EC 421: Introduction to Econometrics
+### Due <em>before</em> midnight on Tuesday, 12 May 2020
+
+---
+
+layout: true
+class: clear
+---
+
+
+
+## Instructions
+
+.mono.b[DUE:] **One member** of your group must upload your answer on [Canvas](https://canvas.uoregon.edu/) *before* midnight on Tuesday, 12 May 2020. All members of the group must be listed on the submission.
+
+.mono.b[IMPORTANT:] As with your homework, you must submit .b[two files]:
+&lt;br&gt; .b.mono[1.] your typed responses/answers to the question (in a Word file or something similar)
+&lt;br&gt; .b.mono[2.] the .mono[R] script you used to generate your answers. Each student must turn in her/his own answers.
+
+If you are using RMarkdown, you can submit a single file.
+
+.mono.b[README!] The last page has a table that describes each variable in the dataset (`proj1.csv`).
+
+.mono.b[INTEGRITY:] Groups can either have **one or two members**. Only one person needs to submit your final document. If you are suspected of cheating in any way (for example, copying from someone else), then you will receive a zero. We may report you to the dean.
+
+.mono.b[GRADING:] Your grade for this project will be based upon the accuracy of your answers *and* how well you explain/illustrate your answers. We value short, accurate answers over long, meandering answers. Edit your answers!
+
+.mono.b[EMAIL POLICY:] Do not ask the GEs or the instructor for help coding or for help answering these questions. You may only ask **clarifying** questions. Use Google and the course's materials (lectures, labs, notes, assignment keys).
+
+---
+
+## Questions
+
+.b[01.] Summarize and describe the dataset. Your answer should include:
+
+- What share of the sample is female? What share of the sample is non-white?
+- How skewed are the income and education distributions?
+- Create three figures (graphs) that summarize key variables.
+- Create two figures (graphs) that summarize how key variables relate to each other.
+
+Explain your decisions on summarizing the data. What do you learn about potential relationships?
+
+.b[02.] Regress individuals' income (`income`) on an intercept and their education (`education`).
+
+.b[03.] Create a scatter plot with the residuals from .b[02] on the y axis and education on the x axis.
+
+.b[04.] Does the scatter plot from .b[03] suggest that **heteroskedasticity** may be present? Explain your answer.
+
+.b[05.] More generally: Does the scatter plot from .b[03] suggest that there are any issues with **your specification**? Explain.
+
+.b[06.] Explain why the regression in .b[02] could suffer from omitted-variable bias. 
+
+.b[07.] Give an example of an omitted variable (other than *ability*) that could cause bias in the regression in .b[02]. Just to be clear: Do not use the variable *ability* as your example. 
+
+- Explain how your example variable satisfies both requirements for omitted-variable bias.
+- Describe the direction of the bias this variable would cause (when we estimate the effect of education on income). Explain your answer.
+
+.b[08.] Now regress *income* on an intercept, *education*, **and** *ability*. Interpret the results.
+
+.b[09.] Does your estimate for the effect of education on income change from question .b[02] to question .b[08]? Explain why this change (or lack of change) makes sense. 
+
+*Hint:* Is there a significant relationship between *education* and *ability*?
+
+.b[10.] Up to this point, we have generally told you which regressions to run. And we've stuck with pretty simple regressions (*e.g.*, regress `y` on `x1` and `x2`). We now want you to explore the actual complexity of econometric/statistical analyses. Estimate three new models. These models should not match your previous models (in .b[02] and .b[08]). Across these three new models, you should include (at least once):
+
+- a log-transformed variable (*i.e.*, use `log`)
+- an interaction 
+
+.b[11.] How did you choose your specifications in .b[10]? Explain your decision making.
+
+.b[12.] Which of your new models is "best"—if you must choose one model, which would you choose? Why?
+
+.b[13.] For your "best" model (chosen in .b[12]): Interpret the coefficients and comment on their statistical significance.
+
+.b[14.] Do you *trust* the estimates from your *best model*? Explain why/why not.
+
+.b[15.] Suppose you want to estimate the effect of high-school graduation. How could you use the current data to estimate this effect? Describe any regressions, estimates, figures, and/or caveats you would make. *Note:* You can assume that someone with 12 years of education graduated from high school.
+
+---
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Variable &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Description &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[income] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; The individual's annual income (in US dollars). &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[married] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator (1,0) for whether the individual is currently married. &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[kids] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Number of children. &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[nonwhite] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator (1,0) for whether the individual belongs to a non-white ethnicity. &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[female] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator (1,0) for whether the individual is female. &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[education] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Years of education. &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[urban] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator (1,0) for whether the individual's home is classified as 'urban'. &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[ability] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Ability on scale of 0 (lowest) to 100 (highest). &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+exclude: true
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "8.5:11",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
