@@ -1,0 +1,340 @@
+---
+# title: "Problem Set 4"
+title: "Problem Set 4 Solutions"
+subtitle: "Causality and Review"
+author: "**EC 421:** Introduction to Econometrics"
+# date: "<br>Due *before* midnight (11:59pm) on Friday, 05 June 2020"
+output:
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    nature:
+      ratio: '8.5:11'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+layout: true
+class: clear
+
+---
+
+```{r, setup, include = F}
+# Knitr options
+library(knitr)
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(digits = 4)
+options(width = 90)
+```
+
+```{r, r-setup, include = F}
+library(pacman)
+p_load(tidyverse, knitr, kableExtra, magrittr, here)
+```
+
+<noscript>
+
+.b.mono[OPTIONAL] This problem set is optional. If you submit this problem set, then we will replace your lowest previous assignment grade with this problem set's grade. If you do not submit anything, then your grade will be unaffected.
+
+- If you are worried about your grade, then you should do this assignment.
+- If you want a nice way to review for the final, then you should do this assignment.
+
+.b.mono[DUE] If you choose to do this assignment: upload your answers on [Canvas](https://canvas.uoregon.edu/) *before* midnight on Friday, 05 June 2020.
+
+.b.mono[IMPORTANT] You must submit .b[two files]:
+<br> .b.mono[1.] your typed responses/answers to the question (in a Word file or something similar)
+<br> .b.mono[2.] the .mono[R] script you used to generate your answers. Each student must turn in her/his own answers.
+
+If use [RMarkdown](https://rmarkdown.rstudio.com/), you can turn in one file, but it must be an .mono[HTML] or .mono[PDF] with your responses *and* R code.
+
+.b.mono[OBJECTIVE] This problem set has three purposes: (1) reinforce the topics of time series and statistical inference; (2) build your .mono[R] toolset; (3) start building your intuition about causality within econometrics/regression.
+
+.b.mono[INTEGRITY] If you are suspected of cheating, then you will receive a zero. We may report you to the dean. Everything you turn in must be in your own words.
+
+</noscript>
+
+## 1. Causality
+
+Imagine that we are interested in analyzing a government program. We consider individuals as *treated* if they participated in the program (and untreated if they did not). Following the notation of the Rubin causal model, imagine that we observe the following sample (which would be impossible observe in real life):
+
+.center[
+.bold[Table: Imaginary dataset]
+]
+```{r, 1_table, echo = F, warning = F, message = F, error = F}
+rubin_df = data.frame(
+  i = 1:6,
+  trt = c(0,0,0,1,1,1),
+  y1 = c(17, 7, 10, 5, 0, 1),
+  y0 = c(8, 5, 4, 1, 0, 4)
+)
+rubin_df %>%
+kable(
+  col.names = c(".math[i]", "Trt.", "y.sub[1]", "y.sub[0]"),
+  escape = F
+) %>%
+kable_styling(full_width = F) %>%
+row_spec(1:6, background = "white")
+```
+
+.b.mono[1a.] Calculate and report the treatment effect **for each individual** (*i.e.*, $\tau_i$).
+
+<!-- <noscript> -->
+
+**Answer:** The treatment effects for individuals 1 through 6 are `r rubin_df %>% transmute(y1 - y0) %>% unlist() %>% scales::comma(1)`.
+
+<!-- </noscript> -->
+
+.b.mono[1b.] Is the treatment effect heterogeneous or homogeneous? Briefly explain your answer.
+
+<!-- <noscript> -->
+
+**Answer:** The treatment effect is heterogeneous, as it varies across individuals.
+
+<!-- </noscript> -->
+
+.b.mono[1c.] Calculate and interpret the **average treatment effect** for the sample.
+
+<!-- <noscript> -->
+
+**Answer:** The average causal effect of participation in the program is approximately `r rubin_df %>% transmute(y1 - y0) %>% unlist() %>% mean() %>% scales::comma(0.01)`.
+
+<!-- </noscript> -->
+
+.b.mono[1d.] What does it mean if $\tau_i < 0$ for one individual and $\tau_j > 0$ for another individual?
+
+<!-- <noscript> -->
+
+**Answer:** The program positively affected some people $\left(\tau_j>0\right)$ and negatively affected other people $\left(\tau_i<0\right)$.
+
+<!-- </noscript> -->
+
+.b.mono[1e.] **Estimate the average treatment effect** by comparing the **mean of the treatment group** to the **mean of the control group**. Report your estimate.
+
+<!-- <noscript> -->
+
+**Answer:** 
+```{r, ans-1e}
+# The groups' means
+t1 = rubin_df %>% filter(trt == 1) %$% y1 %>% mean()
+t0 = rubin_df %>% filter(trt == 0) %$% y0 %>% mean()
+# Our estimate of the ATE
+ate_est = t1 - t0
+```
+Our estimate for the average treatment effect is $\widehat{\tau} \approx `r round(ate_est, 3)`$.
+
+<!-- </noscript> -->
+
+.b.mono[1f.] Should we expect our estimator in .b.mono[1e] to provide unbiased estimates? **Explain.**
+
+<!-- <noscript> -->
+
+**Answer:** No. Unless the treatment is exogenous (for example: randomized treatments), then we should not expect an unbiased estimate.
+
+<!-- </noscript> -->
+
+.b.mono[1g.] Why would it be impossible to actually observe all of the data in the table (in real life)? Specifically: Which parts of the dataset would we not observe in real life? Think about *the fundametal problem of causal inference*.
+
+<!-- <noscript> -->
+
+**Answer:** If an individual is treated, then we do not get to observe $y_0$, and if the individual is untreated, then we do not get to observe $y_1$.
+
+---
+
+<!-- </noscript> -->
+
+.b.mono[1h.] Define and explain selection bias.
+
+<!-- <noscript> -->
+
+**Answer:** The selection bias is the difference between the average untreated outcome for the treated and untreated groups. It tells us how much the treated and untreated observations differ **in their untreated outcomes**. In other words: It tells us to what extent the untreated individuals provide a good counterfactual for the treated individuals.
+
+<!-- </noscript> -->
+
+.b.mono[1i.] Calculate (and report) the selection bias in this sample.
+
+<!-- <noscript> -->
+
+**Answer:** The selection bias in this sample is `r rubin_df %>% group_by(trt) %>% summarize(y0 = mean(y0)) %$% y0 %>% diff()`.
+
+<!-- </noscript> -->
+
+## 2. General Review
+
+These questions cover concepts that we discussed throughout the course.
+
+.b.mono[2a.] Define "standard error".
+
+<!-- <noscript> -->
+
+**Answer:** The standard error tells us about an estimator's variability (which tells us about the uncertainty underlying its estimates). More formally, the standard error is the standard deviation of an estimator's distribution.
+
+<!-- </noscript> -->
+
+.b.mono[2b.] What is the difference between $u_i$ and $e_i$?
+
+<!-- <noscript> -->
+
+**Answer:** $u_i$ gives the unobservable population disturbance, whereas $e_i$ is the sample-regression-based residual.
+
+<!-- </noscript> -->
+
+.b.mono[2c.] How do time-series models and cross-sectional models differ?
+
+<!-- <noscript> -->
+
+**Answer:** Time-series models attempt to model an outcome for a single unit (*e.g.*, individual) across time (*i.e.*, repeated observations). Cross-sectional models consider an outcome across individuals (typically for a specific moment in time).
+
+<!-- </noscript> -->
+
+.b.mono[2d.] Write out an ADL(1,1) model where the outcome variable is the number of arrests and the explanatory variables are (.b[a]) the number of police officers (*e.g.*, $\text{Police}_t$) and (.b[b]) the GDP (*e.g.*, $\text{GDP}_t$) (in addition to the appropriate lags of the outcome and explanatory variables).
+
+<!-- <noscript> -->
+
+**Answer:** $\text{Arrests}_t = \beta_0 + \beta_1 \text{Arrests}_{t-1} + \beta_2 \text{Police}_{t} + \beta_3 \text{Police}_{t-1} + \beta_4 \text{GDP}_{t} + \beta_5 \text{GDP}_{t-1} + u_t$
+
+<!-- </noscript> -->
+
+.b.mono[2e.] Interpret each of the coefficients in .b.mono[2d].
+
+<!-- <noscript> -->
+
+**Answer:** 
+
+- $\beta_1$: For each additional arrest in the previous period $(t-1)$, we expect $\beta_1$ additional arrests in period $t$ (holding all else constant).
+- $\beta_2$: For each additional officer on the street in time $t$, we expect $\beta_2$ additional arrests in period $t$ (holding all else constant).
+- $\beta_3$: For each additional officer on the street in time $t-1$, we expect $\beta_3$ additional arrests in period $t$ (holding all else constant).
+- $\beta_4$: For each additional unit of GDP in period $t$, we expect $\beta_4$ additional arrests in period $t$ (holding all else constant).
+- $\beta_5$: For each additional unit of GDP in period $t-1$, we expect $\beta_5$ additional arrests in period $t$ (holding all else constant).
+
+<!-- </noscript> -->
+
+.b.mono[2f.] How does heteroskedasticity affect OLS regression?
+
+<!-- <noscript> -->
+
+**Answer:**
+
+1. Heteroskedasticity biases our standard-error estimates (which affects inference).
+2. Heteroskedasticity reduces the efficiency of OLS
+
+---
+
+<!-- </noscript> -->
+
+.b.mono[2g.] How do autocorrelated disturbances affect OLS regression? *Hint:* Distinguish between models with lagged outcome variables and models without lagged outcome variables.
+
+<!-- <noscript> -->
+
+**Answer:** Autocorrelated disturbances have different effects depending upon whether the model includes a lagged outcome variable.
+
+- **With a lagged outcome variable:** OLS is biased and inconsistent for the regression coefficients.
+- **Without a lagged outcome variable:** OLS is consistent *if we have contemporaneous exogeneity*.
+
+<!-- </noscript> -->
+
+.b.mono[2h.] What does it mean for a variable to violate variance stationarity?
+
+<!-- <noscript> -->
+
+**Answer:** A variable is variance stationary if its variance is constant throughout time.
+
+<!-- </noscript> -->
+
+.b.mono[2i.] Why do we care if our standard errors are biased?
+
+<!-- <noscript> -->
+
+**Answer:** We care abbout biased standard errors because standard errors tell us about the uncertainty underlying our estimates. If our standard errors are biased, then our test statistics, confidence intervals, and hypothesis tests are all wrong. Thus, we are unable to learn about the precision or uncertainty of our point estimates.
+
+<!-- </noscript> -->
+
+.b.mono[2j.] What does it mean for a relationship to be *spurious*?
+
+<!-- <noscript> -->
+
+**Answer:** Spurious relationships appear to be real (or significant) but are, in fact, false.
+
+<!-- </noscript> -->
+
+.b.mono[2k.] Imagine that you can actually observe the disturbances $(u_i)$. Suppose you care about how the variable $x_i$ affects the outcome $y_i$. Imagine you observe that the mean of $u_i$ is 3 for individuals where $x_i < 5$ and the mean of $u_i$ is 20 for individuals where $x > 5$. Does this suggest our assumption of exogeneity is true or false? Explain.
+
+<!-- <noscript> -->
+
+**Answer:** It suggests that our assumption of exogeneity is false: for exogeneity, we need the disturbances to independent of (uncorrelated with) the explanatory variables.
+
+<!-- </noscript> -->
+
+.b.mono[2l.] Using the following model of test scores, suppose we run a regression that **omits ability**. Will the OLS estimate for $\beta_1$ be biased upward, biased downward, or unbiased? Explain your answer.
+$$
+\begin{align}
+  \left(\text{Test score}\right)_i = \beta_0 + \beta_1 \left(\text{Hours studied}\right)_i + \beta_2 \text{Ability}_i + u_i
+\end{align}
+$$
+
+<!-- <noscript> -->
+
+**Answer:** Suppose the covariance between ability and hours studied is negative and the effect of ability on test scores is positive. Then our estimate for the effect of studying on test scores will be biased **downward** (we will underestimate the true effect).
+
+<!-- </noscript> -->
+
+.b.mono[2m.] How do dynamic models relax the strong assumptions of a static model?
+
+<!-- <noscript> -->
+
+**Answer:** Dynamic models allow effects to occur across time periods, rather than the rigid assumption of static models that says effects only happen in one period.
+
+<!-- </noscript> -->
+
+.b.mono[2n.] What is measurement error and how does it affect OLS regression?
+
+<!-- <noscript> -->
+
+**Answer:** Measurement error means we have a mis-measured (mis-recorded) variable. We often think of these issue as observing the actual variable "plus noise." Measurement error in the explanatory variable attenuates our estimates (biasing them toward zero).
+
+<!-- </noscript> -->
+
+.b.mono[2o.] Interpret $\beta_1$ below. All variables are continuous, numeric variables.
+$$
+\begin{align}
+  \log \left(\text{Happiness}_i\right) = \beta_0 + \beta_1 \log \left(\text{Health}_i\right) + \beta_2 \log\left(\text{Wealth}_i\right) + u_i
+\end{align}
+$$
+
+<!-- <noscript> -->
+
+**Answer:** On average, we expecte a 1-percent increase in *health* to increase *happiness* by $\beta_1$ percent increase (all else equal).
+
+---
+
+<!-- </noscript> -->
+
+.b.mono[2p.] Interpret $\beta_1$ and $\beta_2$ below. All variables are binary indicator variables, *e.g.*, the outcome variable is an indicator for whether the individual owns her/his home.
+$$
+\begin{align}
+  \text{Homeowner}_i = \beta_0 + \beta_1 \text{Female}_i + \beta_2 \left(\text{Non-white race}\right)_i + u_i
+\end{align}
+$$
+
+<!-- <noscript> -->
+
+**Answer:** $\beta_1$ tells us the difference in homeownership rates between female and male individuals, holding everything else constant (how much more likely female individuals are to own homes, relative to non-females, holding race constant). $\beta_2$ tells us the difference in homeownership rates between people of color and white individuals, holding everything else constant.
+
+<!-- </noscript> -->
+
+---
+exclude: true
+
+```{r, print pdf, echo = F, eval = F}
+pagedown::chrome_print("004-questions.html")
+pagedown::chrome_print("004-questions.html", output = "004-solutions.pdf")
+```

@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Problem Set 1: OLS Review</title>
+    <meta charset="utf-8" />
+    <link href="001-questions_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="001-questions_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="001-questions_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+    <script src="001-questions_files/kePrint-0.0.1/kePrint.js"></script>
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Problem Set 1: OLS Review
+## EC 421: Introduction to Econometrics
+### .it.biggest[Solutions]
+
+---
+
+layout: true
+class: clear
+---
+
+
+
+.mono.b[DUE] Upload your answer on [Canvas](https://canvas.uoregon.edu/) *before* midnight on Sunday, 19 April 2020.
+
+.mono.b[IMPORTANT] You must submit .b[two files]:
+&lt;br&gt; .b.mono[1.] your typed responses/answers to the question (in a Word file or something similar)
+&lt;br&gt; .b.mono[2.] the .mono[R] script you used to generate your answers. Each student must turn in her/his own answers.
+
+.mono.b[README!] The data in this problem set come from the 2018 American Community Survey (ACS), which I downloaded from [IPUMS](https://ipums.org/). The last page has a table that describes each variable in the dataset(s).
+
+.mono.b[OBJECTIVE] This problem set has three purposes: (1) reinforce the metrics topics we reviewed in class; (2) build your .mono[R] toolset; (3) start building your intuition about causality within econometrics/regression.
+
+.mono.b[INTEGRITY] If you are suspected of cheating, then you will receive a zero. We may report you to the dean.
+
+## Setup 
+
+.b[Q01.] Load your packages. You'll probably going to need/want `tidyverse` and `here` (among others).
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Load packages using 'pacman'
+library(pacman)
+p_load(tidyverse, here)
+```
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q02.] Now load the data. I saved the same dataset as two different formats:
+
+- an `.rds` file: use a function that reads `.rds` files—for example, `readRDS()` or `read_rds()` (from the `readr` package in the `tidyverse`.
+- a `.csv` file: use a function that reads `.csv` files—for example, `read.csv()` or `read_csv()` (from the `readr` package in the `tidyverse`.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+ 
+
+```r
+# Load data
+ps_df = here("001-data.csv") %&gt;% read_csv()
+```
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+.b[Q03.] Check your dataset. How many observations and variables do you have? *Hint:* Try `dim()`, `ncol()`, `nrow()`.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+  
+
+```r
+# Check dimensions
+dim(ps_df)
+```
+
+```
+#&gt; [1] 25000    12
+```
+
+We have 25,000 observations (rows) on 12 variables (columns).
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+## Getting to know your data
+
+.b[Q04.] Plot a histogram of households' income (variable: `hh_income`). *Note:* Household income is in tens of thousands of dollars (so a value of `8` implies an income of $80,000.)
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Create the histogram of HH income using ggplot2
+ggplot(data = ps_df, aes(x = hh_income * 10000)) +
+geom_histogram(bins = 100) +
+scale_x_continuous("Household income", labels = scales::dollar) +
+scale_y_continuous("Count", labels = scales::comma) +
+theme_minimal(base_size = 10)
+```
+
+&lt;img src="001-questions_files/figure-html/answer04-1.svg" style="display: block; margin: auto;" /&gt;
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q05.] What are the mean and median levels of household income? Based upon this answer and the previous histogram, is household income (fairly) evenly distributed or is it more skewed? Explain your answer.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Check summary of hh income
+summary(ps_df$hh_income)
+```
+
+```
+#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#&gt;   0.004   4.600   8.000  10.616  13.000 143.600
+```
+
+Households' mean income in the data is approximately $106,160 and median household income is approximately $80,000. Based upon this information—and especially based upon the histogram in the previous problem—we can see that household income in this sample is extremely skewed. The right tail of the distribution extends quite far.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+.b[Q06.] Create a histogram of household income per capita—meaning the household's income divided by the number of individuals in the household. Does dividing by the number of individuals in the household change your understanding of the income distribution? Explain your answer.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Create the histogram of HH income using ggplot2
+ggplot(data = ps_df, aes(x = hh_income / hh_size * 10000)) +
+geom_histogram(bins = 100) +
+scale_x_continuous("Household income per member", labels = scales::dollar) +
+scale_y_continuous("Count", labels = scales::comma) +
+theme_minimal(base_size = 10)
+```
+
+&lt;img src="001-questions_files/figure-html/answer06-1.svg" style="display: block; margin: auto;" /&gt;
+
+Dividing by the number of members in a household does not really change our understanding of income—it is still extremely skewed.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q07.] Run a regression that helps summarize the relationship between household income and household size. Interpret the results of the regression—the meaning of the coefficient(s). Comment on the coefficient's statistical significance.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**] You have a lot of options here. I'm going to regress the log of income on the level of household size.
+
+
+```r
+# Regression
+est07 = lm(log(hh_income) ~ hh_size, data = ps_df)
+# Results
+est07 %&gt;% broom::tidy()
+```
+
+```
+#&gt; # A tibble: 2 x 5
+#&gt;   term        estimate std.error statistic   p.value
+#&gt;   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+#&gt; 1 (Intercept)    1.67    0.0114      146.  0.       
+#&gt; 2 hh_size        0.125   0.00356      35.2 8.97e-265
+```
+
+The estimated coefficient in this log-linear model suggests that a one-person increase in a household's size is associated with a 12.5% increase in household income.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q08.] Explain why you chose the specification you chose in the previous question.
+
+- Was it linear, log-linear, log-log?
+- What was the outcome variable?
+- What was the explanatory variable?
+- Why did you make these choices?
+
+&lt;!-- &lt;noscript&gt; --&gt;
+ 
+.pink[**Answer:**] I chose I log-linear specification to allow household size to be associated with *percent* changes in income (rather than level changes)—and because logging a variable can compress its distribution (and we know income is very skewed).
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+.b[Q09.] Plot a histogram of the time households spend commuting each day (the variable `time_commuting` is the average commuting time for a household). Is the distribution of commute time more or less equitable than income? Explain.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Create the histogram of HH income using ggplot2
+ggplot(data = ps_df, aes(x = time_commuting)) +
+geom_histogram(bins = 100) +
+scale_x_continuous("Avg. time commuting (minutes per day)", labels = scales::comma) +
+scale_y_continuous("Count", labels = scales::comma) +
+theme_minimal(base_size = 10)
+```
+
+&lt;img src="001-questions_files/figure-html/answer09-1.svg" style="display: block; margin: auto;" /&gt;
+
+This distribution still appears to be pretty inequitable: it has a lot of variance, and there is still a lot of skew in the distribution. Perhaps the skew is a bit lower than with income.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+## Regression refresher: Varying the specification
+
+.b[Q10.] &lt;b&gt;Linear specification&lt;/b&gt; Regress average commute time (`time_commuting`) on household income (`hh_income`). Interpret the coefficient and comment on its statistical significance.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Regress commute time on income
+est10 = lm(time_commuting ~ hh_income, data = ps_df)
+# Results
+est10 %&gt;% broom::tidy()
+```
+
+```
+#&gt; # A tibble: 2 x 5
+#&gt;   term        estimate std.error statistic  p.value
+#&gt;   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1 (Intercept)   34.9      0.301     116.   0.      
+#&gt; 2 hh_income      0.175    0.0203      8.64 6.20e-18
+```
+
+Our estimated coefficient suggests that a one-unit increase in household income (an increase of $10,000) is associated with an increase in commute time of approximately 0.2 minutes. This coefficient is statistically significant at the 5% level (though not very economically meaningful—the magnitude of the coefficient is quite small).
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+.b[Q11.] &lt;b&gt;Log-linear specification&lt;/b&gt; Regress the log of average commute time on household income. Interpret the coefficient and comment on its statistical significance.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Log-linear regression
+est11 = lm(log(time_commuting) ~ hh_income, data = ps_df)
+# Results
+est11 %&gt;% broom::tidy()
+```
+
+```
+#&gt; # A tibble: 2 x 5
+#&gt;   term        estimate std.error statistic  p.value
+#&gt;   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1 (Intercept)  3.18     0.00806      395.  0.      
+#&gt; 2 hh_income    0.00689  0.000545      12.6 1.59e-36
+```
+
+With this log-linear specification, our coefficient estimate suggests that a one-unit increase in household income (an increase of $10,000 dollars) is associated with an increase in commute time of approximately 0.7%. This coefficient is still statistically significant at the 5% level (and still small in absolute magnitude).
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q12.] &lt;b&gt;Log-log specification&lt;/b&gt; Regress the log of average commute time on the log of household income. Interpret the coefficient and comment on its statistical significance.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Log-linear regression
+est12 = lm(log(time_commuting) ~ log(hh_income), data = ps_df)
+# Results
+est12 %&gt;% broom::tidy()
+```
+
+```
+#&gt; # A tibble: 2 x 5
+#&gt;   term           estimate std.error statistic   p.value
+#&gt;   &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+#&gt; 1 (Intercept)       2.98    0.0142      210.  0.       
+#&gt; 2 log(hh_income)    0.138   0.00645      21.3 5.97e-100
+```
+
+With this log-log specification, our coefficient estimate suggests that a one-percent increase in household income is associated with an increase in commute time of approximately 0.138 percent. This coefficient is still statistically significant at the 5% level (and still small in absolute magnitude).
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+## Multiple linear regression and indicator variables
+
+.b[Q13.] Regress average commute time on household income &lt;b&gt;and&lt;/b&gt; the share of the individuals in the household who are non-white ethnicities (`hh_share_nonwhite`). Interpret the intercept and coefficient and comment on their statistical significance. Also compare your results to Q10. Has anything changed?
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Log-linear regression
+est13 = lm(time_commuting ~ hh_income + hh_share_nonwhite, data = ps_df)
+# Results
+est13 %&gt;% broom::tidy()
+```
+
+```
+#&gt; # A tibble: 3 x 5
+#&gt;   term              estimate std.error statistic  p.value
+#&gt;   &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1 (Intercept)         34.5      0.330     105.   0.      
+#&gt; 2 hh_income            0.179    0.0204      8.80 1.48e-18
+#&gt; 3 hh_share_nonwhite    1.31     0.522       2.51 1.21e- 2
+```
+
+The intercept (34.5 minutes) tells us the expected (or estimated) commute time for a household with zero income and that is 0% nonwhite.
+
+Our coefficient on household income (`hh_income`) tells us that a one-unit increase in household income (an increase of $10,000 dollars) is associated with an increase in commute time of approximately 0.18 minutes **holding everything else constant**. This coefficient is still statistically significant at the 5% level (and still small in absolute magnitude). This coefficient is still statistically significant. It hasn't changed much relative to **Q10**.
+
+Our coefficient on the share of the household that represents a non-white ethnicity (`hh_share_nonwhite`) tells us the expected difference in commute time between entirely non-white households (`hh_share_nonwhite = 1`) and entirely white households (`hh_share_nonwhite = 0`) **holding all other variables constant**. Specifically, we find that non-white households, on average, have a 1.31-minute longer commute time (holding all other variables constant). This coefficient is statistically significant at the 5% level.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q14.] Regress average commute time on the indicator variable for whether a household moved in the last year (`i_moved`). Interpret the intercept and coefficient and comment on their statistical significance.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Log-linear regression
+est14 = lm(time_commuting ~ i_moved, data = ps_df)
+# Results
+est14 %&gt;% broom::tidy()
+```
+
+```
+#&gt; # A tibble: 2 x 5
+#&gt;   term        estimate std.error statistic p.value
+#&gt;   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+#&gt; 1 (Intercept)  36.7        0.233  158.       0    
+#&gt; 2 i_moved      -0.0329     0.536   -0.0613   0.951
+```
+
+The intercept (36.7) tells us the average commute for households that did not move in the last year (`i_moved = 0`).
+
+The coefficient on `i_moved` (-0.03) tells us the difference in commute time between households that moved and households that did not move. This coefficient is not statistically significant—meaning we do not find a significant difference in commute time between households that moved and households that did not move.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+.b[Q15.] Add the share of the household that represents a non-white ethnicity (`hh_share_nonwhite`) to the regression in Q14. &lt;i&gt;Note:&lt;/i&gt; Your outcome variable is still average household commute time, but you should now have two explanatory variables. Interpret the intercept and coefficient and comment on their statistical significance. 
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Log-linear regression
+est15 = lm(time_commuting ~ i_moved + hh_share_nonwhite, data = ps_df)
+# Results
+est15 %&gt;% broom::tidy()
+```
+
+```
+#&gt; # A tibble: 3 x 5
+#&gt;   term              estimate std.error statistic p.value
+#&gt;   &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+#&gt; 1 (Intercept)        36.5        0.261   140.     0     
+#&gt; 2 i_moved            -0.0706     0.536    -0.132  0.895 
+#&gt; 3 hh_share_nonwhite   0.973      0.522     1.86   0.0622
+```
+
+The intercept (36.5) tells us the average commute for households that did not move in the last year (`i_moved = 0`) and who are 0% nonwhite.
+
+The coefficient on `i_moved` (-0.07) now tells us the difference in commute time between households that moved and households that did not move **holding the share non-white constant**. This coefficient is still not statistically significant—meaning we do not find a significant difference in commute time between households that moved and households that did not move.
+
+Our coefficient on the share of the household that represents a non-white ethnicity (`hh_share_nonwhite`) tells us the expected difference in commute time between entirely non-white households (`hh_share_nonwhite = 1`) and entirely white households (`hh_share_nonwhite = 0`) **holding all other variables constant**. Specifically, we find that non-white households, on average, have a 0.97-minute longer commute time **holding moving history constant**. This coefficient is marginally statistically significant—significant at the 10% level but not at the 5% level.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q16.] Did adding this second explanatory variable change the coefficient of the first variable at all? What does that tell you? Explain your answer.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**] The coefficient on `i_moved` changed a little, but not much. This coefficient still is not statistically signficiant. 
+
+Because the coefficient did not change much when we added a new variable, we know that our new variable (the share of the household that is not white) is pretty uncorrelated with the original variable (the indicator for whether the household moved in the last year).
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+.b[Q17.] Now add the interaction between your two explanatory variables in Q16 and re-run the regreation. (You should have an intercept and three coefficients—the two variables plus their interaction.) Interpret the coefficient on the interaction and comment on its statistical significance.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Log-linear regression
+est17 = lm(time_commuting ~ i_moved + hh_share_nonwhite + i_moved:hh_share_nonwhite, data = ps_df)
+# Results
+est17 %&gt;% broom::tidy()
+```
+
+```
+#&gt; # A tibble: 4 x 5
+#&gt;   term                      estimate std.error statistic p.value
+#&gt;   &lt;chr&gt;                        &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+#&gt; 1 (Intercept)                 36.4       0.267   136.     0     
+#&gt; 2 i_moved                      0.579     0.632     0.916  0.360 
+#&gt; 3 hh_share_nonwhite            1.48      0.583     2.53   0.0113
+#&gt; 4 i_moved:hh_share_nonwhite   -2.53      1.31     -1.94   0.0524
+```
+
+There are a couple of ways to think about the coefficient on the interaction. First, we can interpret this coefficient as testing whether there's a different effect of moving for white households and non-white households. Another way to interpret this coefficient is whether there's a different effect of ethnicity on households I have recently moved or have not recently moved. However you were thinking about it, this interaction asks whether the effects of moving and ethnicity depend on each other.
+
+The coefficient on this interaction is statistically significant at the 10% level, and it's nearly significant at the 5% level. It seems like the effect of moving differs for non-white and white households.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q18.] Did including the interaction change your understanding of the relationship between the variables? Explain.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+  
+.pink[**Answer:**] Yes. The coefficient on ethnicity became statistically significant and larger. We also found significant evidence of an interaction between moving and ethnicity. Both of these changes affect the way that we interpret the relationship between our outcome variable (commute time) and the explanatory variables.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+.b[Q19.] Regress the indicator for whether the household has a smartphone (`i_smartphone`) on the household's income (`hh_income`) and the share of the household's individuals who represent non-white ethnicities (`hh_share_nonwhite`). Interpret the intercept and coefficients. Comment on their statistical significance.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**]
+
+
+```r
+# Regression
+est19 = lm(i_smartphone ~ hh_income + hh_share_nonwhite, data = ps_df)
+# Results
+est19 %&gt;% broom::tidy()
+```
+
+```
+#&gt; # A tibble: 3 x 5
+#&gt;   term              estimate std.error statistic  p.value
+#&gt;   &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1 (Intercept)        0.910    0.00242     376.   0.      
+#&gt; 2 hh_income          0.00261  0.000149     17.5  3.07e-68
+#&gt; 3 hh_share_nonwhite -0.00564  0.00382      -1.47 1.40e- 1
+```
+
+We interpret the intercept 0.91 as the percentage of households that on a cell phone when the household income is zero and the share non-white is also zero.
+
+The coefficient on household income tells us that for every unit of increase ($10,000 in household income) we expect the share of households who own a smart phone to increase by 0.26% percent **holding everything else constant**.
+
+The coefficient on the share of the household who represent non-white ethnicities tells us that the probability a household owns a cellphone is 0.56% percent lower than white households **holding everything else (*e.g.*, income) constant**.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+## The bigger picture
+
+.b[Q20.] In the last regression (Q19), should we be concerned about omitted-variable bias? Explain your answer and provide an example of a potential omitted variable if you are concerned about omitted-variable bias.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+  
+.pink[**Answer:**] Yes. There's a great potential for omitted variable problems in this setting. One example: geography. In different areas, there is different access to sell funds. Across different geographic regions, there are also differences in income and ethnicity. We are not controlling for geography or other things that are caused by/related to geography.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q21.] Is R-squared a good measure of model performance? Explain your answer.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**] Maybe, but probably not. It tells us the share of the variation in our outcome variable that we are able to explain. But it also mechanically increases as we more add more explanatory variables. So it can help us in knowing how much of our outcome variable we are explaining, but it does not help us to choose explanatory variables.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q22.] Define the term &lt;i&gt;standard error&lt;/i&gt;.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**] Standard error is the standard deviation of an estimator's distribution.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q23.] What does our assumption of &lt;i&gt;exogeneity&lt;/i&gt; require? 
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**] Our assumption of exogeneity requires that the explanatory variables are uncorrelated with our disturbances. With math: `\(E[u|x]=0\)`.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+.b[Q24.] What does it mean for an estimator to be &lt;i&gt;unbiased&lt;/i&gt;?
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**] An estimator is unbiased if the meaning of its distribution is equal to the perimeter that it is estimating. In math (for estimator `\(\hat{\theta}\)` and parameter `\(\theta\)`): `\(E[\hat{\theta}] = \theta\)`.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b[Q25.] What does it mean for an estimator to be &lt;i&gt;more efficient than another estimator&lt;/i&gt;?
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+.pink[**Answer:**] Estimator 1 is more efficient than estimator 2 if the distribution of estimator 1 has smaller variance than the distribution of estimator 2.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+class: clear
+
+## Description of variables and names
+
+&lt;br&gt;
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Variable &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Description &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[fips] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; County FIPS code &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[hh_size] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Household size (number of people) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[hh_income] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Household total income in $10,000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[cost_housing] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Household's total reported cost of housing &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[n_vehicles] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Household's number of vehicles &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[hh_share_nonwhite] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Share of household members identifying as non-white ethnicities &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[i_renter] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator for whether any household members are renters &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[i_moved] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator for whether a household member moved in prior 1 year &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[i_foodstamp] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator for whether any household member participates in foodstamps &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[i_smartphone] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator for whether a household member owns a smartphone &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[i_internet] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator for whether the household has access to the internet &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[time_commuting] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Average time spent commuting per day by each household member (minutes) &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+In general, I've tried to stick with a naming convention. Variables that begin with .mono-small[i\\_] denote binary indicatory variables (taking on the value of .mono-small[0] or .mono-small[1]). Variables that begin with .mono-small[n_] are numeric variables.
+
+---
+exclude: true
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "8.5:11",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

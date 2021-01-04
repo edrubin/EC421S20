@@ -1,0 +1,484 @@
+---
+title: "Problem Set 1: OLS Review"
+subtitle: "EC 421: Introduction to Econometrics"
+# author: "Edward Rubin"
+# date: "Due *before* midnight on Sunday, 19 April 2020"
+date: ".it.biggest[Solutions]"
+output:
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    # self_contained: true
+    nature:
+      ratio: '8.5:11'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+layout: true
+class: clear
+---
+
+```{r, setup, include = F}
+# Load magrittr
+library(magrittr)
+# Knitr options
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+```
+
+.mono.b[DUE] Upload your answer on [Canvas](https://canvas.uoregon.edu/) *before* midnight on Sunday, 19 April 2020.
+
+.mono.b[IMPORTANT] You must submit .b[two files]:
+<br> .b.mono[1.] your typed responses/answers to the question (in a Word file or something similar)
+<br> .b.mono[2.] the .mono[R] script you used to generate your answers. Each student must turn in her/his own answers.
+
+.mono.b[README!] The data in this problem set come from the 2018 American Community Survey (ACS), which I downloaded from [IPUMS](https://ipums.org/). The last page has a table that describes each variable in the dataset(s).
+
+.mono.b[OBJECTIVE] This problem set has three purposes: (1) reinforce the metrics topics we reviewed in class; (2) build your .mono[R] toolset; (3) start building your intuition about causality within econometrics/regression.
+
+.mono.b[INTEGRITY] If you are suspected of cheating, then you will receive a zero. We may report you to the dean.
+
+## Setup 
+
+.b[Q01.] Load your packages. You'll probably going to need/want `tidyverse` and `here` (among others).
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer01}
+# Load packages using 'pacman'
+library(pacman)
+p_load(tidyverse, here)
+```
+
+<!-- </noscript> -->
+
+.b[Q02.] Now load the data. I saved the same dataset as two different formats:
+
+- an `.rds` file: use a function that reads `.rds` files—for example, `readRDS()` or `read_rds()` (from the `readr` package in the `tidyverse`.
+- a `.csv` file: use a function that reads `.csv` files—for example, `read.csv()` or `read_csv()` (from the `readr` package in the `tidyverse`.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+ 
+```{r, answer02}
+# Load data
+ps_df = here("001-data.csv") %>% read_csv()
+```  
+
+<!-- </noscript> -->
+
+---
+
+.b[Q03.] Check your dataset. How many observations and variables do you have? *Hint:* Try `dim()`, `ncol()`, `nrow()`.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+  
+```{r, answer03}
+# Check dimensions
+dim(ps_df)
+```
+
+We have `r nrow(ps_df) %>% scales::comma()` observations (rows) on `r ncol(ps_df)` variables (columns).
+
+<!-- </noscript> -->
+
+## Getting to know your data
+
+.b[Q04.] Plot a histogram of households' income (variable: `hh_income`). *Note:* Household income is in tens of thousands of dollars (so a value of `8` implies an income of $80,000.)
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer04, fig.height = 2.5}
+# Create the histogram of HH income using ggplot2
+ggplot(data = ps_df, aes(x = hh_income * 10000)) +
+geom_histogram(bins = 100) +
+scale_x_continuous("Household income", labels = scales::dollar) +
+scale_y_continuous("Count", labels = scales::comma) +
+theme_minimal(base_size = 10)
+```
+
+<!-- </noscript> -->
+
+.b[Q05.] What are the mean and median levels of household income? Based upon this answer and the previous histogram, is household income (fairly) evenly distributed or is it more skewed? Explain your answer.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer05}
+# Check summary of hh income
+summary(ps_df$hh_income)
+```
+
+Households' mean income in the data is approximately `r ps_df$hh_income %>% multiply_by(1e4) %>% mean() %>% scales::dollar()` and median household income is approximately `r ps_df$hh_income %>% multiply_by(1e4) %>% median() %>% scales::dollar()`. Based upon this information—and especially based upon the histogram in the previous problem—we can see that household income in this sample is extremely skewed. The right tail of the distribution extends quite far.
+
+<!-- </noscript> -->
+
+---
+
+.b[Q06.] Create a histogram of household income per capita—meaning the household's income divided by the number of individuals in the household. Does dividing by the number of individuals in the household change your understanding of the income distribution? Explain your answer.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer06, fig.height = 2.5}
+# Create the histogram of HH income using ggplot2
+ggplot(data = ps_df, aes(x = hh_income / hh_size * 10000)) +
+geom_histogram(bins = 100) +
+scale_x_continuous("Household income per member", labels = scales::dollar) +
+scale_y_continuous("Count", labels = scales::comma) +
+theme_minimal(base_size = 10)
+```
+
+Dividing by the number of members in a household does not really change our understanding of income—it is still extremely skewed.
+
+<!-- </noscript> -->
+
+.b[Q07.] Run a regression that helps summarize the relationship between household income and household size. Interpret the results of the regression—the meaning of the coefficient(s). Comment on the coefficient's statistical significance.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**] You have a lot of options here. I'm going to regress the log of income on the level of household size.
+
+```{r, answer07}
+# Regression
+est07 = lm(log(hh_income) ~ hh_size, data = ps_df)
+# Results
+est07 %>% broom::tidy()
+```
+
+The estimated coefficient in this log-linear model suggests that a one-person increase in a household's size is associated with a `r est07$coefficients[2] %>% scales::percent(accuracy = 0.1)` increase in household income.
+
+<!-- </noscript> -->
+
+.b[Q08.] Explain why you chose the specification you chose in the previous question.
+
+- Was it linear, log-linear, log-log?
+- What was the outcome variable?
+- What was the explanatory variable?
+- Why did you make these choices?
+
+<!-- <noscript> -->
+ 
+.pink[**Answer:**] I chose I log-linear specification to allow household size to be associated with *percent* changes in income (rather than level changes)—and because logging a variable can compress its distribution (and we know income is very skewed).
+
+<!-- </noscript> -->
+
+---
+
+.b[Q09.] Plot a histogram of the time households spend commuting each day (the variable `time_commuting` is the average commuting time for a household). Is the distribution of commute time more or less equitable than income? Explain.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer09, fig.height = 2.5}
+# Create the histogram of HH income using ggplot2
+ggplot(data = ps_df, aes(x = time_commuting)) +
+geom_histogram(bins = 100) +
+scale_x_continuous("Avg. time commuting (minutes per day)", labels = scales::comma) +
+scale_y_continuous("Count", labels = scales::comma) +
+theme_minimal(base_size = 10)
+```
+
+This distribution still appears to be pretty inequitable: it has a lot of variance, and there is still a lot of skew in the distribution. Perhaps the skew is a bit lower than with income.
+
+<!-- </noscript> -->
+
+## Regression refresher: Varying the specification
+
+.b[Q10.] <b>Linear specification</b> Regress average commute time (`time_commuting`) on household income (`hh_income`). Interpret the coefficient and comment on its statistical significance.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer10}
+# Regress commute time on income
+est10 = lm(time_commuting ~ hh_income, data = ps_df)
+# Results
+est10 %>% broom::tidy()
+```
+
+Our estimated coefficient suggests that a one-unit increase in household income (an increase of $10,000) is associated with an increase in commute time of approximately `r est10$coefficients[2] %>% scales::comma(accuracy = 0.1)` minutes. This coefficient is statistically significant at the 5% level (though not very economically meaningful—the magnitude of the coefficient is quite small).
+
+<!-- </noscript> -->
+
+---
+
+.b[Q11.] <b>Log-linear specification</b> Regress the log of average commute time on household income. Interpret the coefficient and comment on its statistical significance.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer11}
+# Log-linear regression
+est11 = lm(log(time_commuting) ~ hh_income, data = ps_df)
+# Results
+est11 %>% broom::tidy()
+```
+
+With this log-linear specification, our coefficient estimate suggests that a one-unit increase in household income (an increase of $10,000 dollars) is associated with an increase in commute time of approximately `r est11$coefficients[2] %>% scales::percent(accuracy = 0.1)`. This coefficient is still statistically significant at the 5% level (and still small in absolute magnitude).
+
+<!-- </noscript> -->
+
+.b[Q12.] <b>Log-log specification</b> Regress the log of average commute time on the log of household income. Interpret the coefficient and comment on its statistical significance.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer12}
+# Log-linear regression
+est12 = lm(log(time_commuting) ~ log(hh_income), data = ps_df)
+# Results
+est12 %>% broom::tidy()
+```
+
+With this log-log specification, our coefficient estimate suggests that a one-percent increase in household income is associated with an increase in commute time of approximately `r est12$coefficients[2] %>% scales::comma(accuracy = 0.001)` percent. This coefficient is still statistically significant at the 5% level (and still small in absolute magnitude).
+
+<!-- </noscript> -->
+
+---
+
+## Multiple linear regression and indicator variables
+
+.b[Q13.] Regress average commute time on household income <b>and</b> the share of the individuals in the household who are non-white ethnicities (`hh_share_nonwhite`). Interpret the intercept and coefficient and comment on their statistical significance. Also compare your results to Q10. Has anything changed?
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer13}
+# Log-linear regression
+est13 = lm(time_commuting ~ hh_income + hh_share_nonwhite, data = ps_df)
+# Results
+est13 %>% broom::tidy()
+```
+
+The intercept (`r est13$coefficients[1] %>% scales::comma(accuracy = 0.1)` minutes) tells us the expected (or estimated) commute time for a household with zero income and that is 0% nonwhite.
+
+Our coefficient on household income (`hh_income`) tells us that a one-unit increase in household income (an increase of $10,000 dollars) is associated with an increase in commute time of approximately `r est13$coefficients[2] %>% scales::comma(accuracy = 0.01)` minutes **holding everything else constant**. This coefficient is still statistically significant at the 5% level (and still small in absolute magnitude). This coefficient is still statistically significant. It hasn't changed much relative to **Q10**.
+
+Our coefficient on the share of the household that represents a non-white ethnicity (`hh_share_nonwhite`) tells us the expected difference in commute time between entirely non-white households (`hh_share_nonwhite = 1`) and entirely white households (`hh_share_nonwhite = 0`) **holding all other variables constant**. Specifically, we find that non-white households, on average, have a `r est13$coefficients[3] %>% scales::comma(accuracy = 0.01)`-minute longer commute time (holding all other variables constant). This coefficient is statistically significant at the 5% level.
+
+<!-- </noscript> -->
+
+.b[Q14.] Regress average commute time on the indicator variable for whether a household moved in the last year (`i_moved`). Interpret the intercept and coefficient and comment on their statistical significance.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer14}
+# Log-linear regression
+est14 = lm(time_commuting ~ i_moved, data = ps_df)
+# Results
+est14 %>% broom::tidy()
+```
+
+The intercept (`r est14$coefficients[1] %>% scales::comma(accuracy = 0.1)`) tells us the average commute for households that did not move in the last year (`i_moved = 0`).
+
+The coefficient on `i_moved` (`r est14$coefficients[2] %>% scales::comma(accuracy = 0.01)`) tells us the difference in commute time between households that moved and households that did not move. This coefficient is not statistically significant—meaning we do not find a significant difference in commute time between households that moved and households that did not move.
+
+<!-- </noscript> -->
+
+---
+
+.b[Q15.] Add the share of the household that represents a non-white ethnicity (`hh_share_nonwhite`) to the regression in Q14. <i>Note:</i> Your outcome variable is still average household commute time, but you should now have two explanatory variables. Interpret the intercept and coefficient and comment on their statistical significance. 
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer15}
+# Log-linear regression
+est15 = lm(time_commuting ~ i_moved + hh_share_nonwhite, data = ps_df)
+# Results
+est15 %>% broom::tidy()
+```
+
+The intercept (`r est15$coefficients[1] %>% scales::comma(accuracy = 0.1)`) tells us the average commute for households that did not move in the last year (`i_moved = 0`) and who are 0% nonwhite.
+
+The coefficient on `i_moved` (`r est15$coefficients[2] %>% scales::comma(accuracy = 0.01)`) now tells us the difference in commute time between households that moved and households that did not move **holding the share non-white constant**. This coefficient is still not statistically significant—meaning we do not find a significant difference in commute time between households that moved and households that did not move.
+
+Our coefficient on the share of the household that represents a non-white ethnicity (`hh_share_nonwhite`) tells us the expected difference in commute time between entirely non-white households (`hh_share_nonwhite = 1`) and entirely white households (`hh_share_nonwhite = 0`) **holding all other variables constant**. Specifically, we find that non-white households, on average, have a `r est15$coefficients[3] %>% scales::comma(accuracy = 0.01)`-minute longer commute time **holding moving history constant**. This coefficient is marginally statistically significant—significant at the 10% level but not at the 5% level.
+
+<!-- </noscript> -->
+
+.b[Q16.] Did adding this second explanatory variable change the coefficient of the first variable at all? What does that tell you? Explain your answer.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**] The coefficient on `i_moved` changed a little, but not much. This coefficient still is not statistically signficiant. 
+
+Because the coefficient did not change much when we added a new variable, we know that our new variable (the share of the household that is not white) is pretty uncorrelated with the original variable (the indicator for whether the household moved in the last year).
+
+<!-- </noscript> -->
+
+---
+
+.b[Q17.] Now add the interaction between your two explanatory variables in Q16 and re-run the regreation. (You should have an intercept and three coefficients—the two variables plus their interaction.) Interpret the coefficient on the interaction and comment on its statistical significance.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer17}
+# Log-linear regression
+est17 = lm(time_commuting ~ i_moved + hh_share_nonwhite + i_moved:hh_share_nonwhite, data = ps_df)
+# Results
+est17 %>% broom::tidy()
+```
+
+There are a couple of ways to think about the coefficient on the interaction. First, we can interpret this coefficient as testing whether there's a different effect of moving for white households and non-white households. Another way to interpret this coefficient is whether there's a different effect of ethnicity on households I have recently moved or have not recently moved. However you were thinking about it, this interaction asks whether the effects of moving and ethnicity depend on each other.
+
+The coefficient on this interaction is statistically significant at the 10% level, and it's nearly significant at the 5% level. It seems like the effect of moving differs for non-white and white households.
+
+<!-- </noscript> -->
+
+.b[Q18.] Did including the interaction change your understanding of the relationship between the variables? Explain.
+
+<!-- <noscript> -->
+  
+.pink[**Answer:**] Yes. The coefficient on ethnicity became statistically significant and larger. We also found significant evidence of an interaction between moving and ethnicity. Both of these changes affect the way that we interpret the relationship between our outcome variable (commute time) and the explanatory variables.
+
+<!-- </noscript> -->
+
+---
+
+.b[Q19.] Regress the indicator for whether the household has a smartphone (`i_smartphone`) on the household's income (`hh_income`) and the share of the household's individuals who represent non-white ethnicities (`hh_share_nonwhite`). Interpret the intercept and coefficients. Comment on their statistical significance.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**]
+
+```{r, answer19}
+# Regression
+est19 = lm(i_smartphone ~ hh_income + hh_share_nonwhite, data = ps_df)
+# Results
+est19 %>% broom::tidy()
+```
+
+We interpret the intercept `r est19$coefficients[1] %>% scales::comma(accuracy = 0.01) ` as the percentage of households that on a cell phone when the household income is zero and the share non-white is also zero.
+
+The coefficient on household income tells us that for every unit of increase ($10,000 in household income) we expect the share of households who own a smart phone to increase by `r est19$coefficients[2] %>% scales::percent(accuracy = 0.01) ` percent **holding everything else constant**.
+
+The coefficient on the share of the household who represent non-white ethnicities tells us that the probability a household owns a cellphone is `r est19$coefficients[3] %>% abs() %>% scales::percent(accuracy = 0.01) ` percent lower than white households **holding everything else (*e.g.*, income) constant**.
+
+<!-- </noscript> -->
+
+## The bigger picture
+
+.b[Q20.] In the last regression (Q19), should we be concerned about omitted-variable bias? Explain your answer and provide an example of a potential omitted variable if you are concerned about omitted-variable bias.
+
+<!-- <noscript> -->
+  
+.pink[**Answer:**] Yes. There's a great potential for omitted variable problems in this setting. One example: geography. In different areas, there is different access to sell funds. Across different geographic regions, there are also differences in income and ethnicity. We are not controlling for geography or other things that are caused by/related to geography.
+
+<!-- </noscript> -->
+
+.b[Q21.] Is R-squared a good measure of model performance? Explain your answer.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**] Maybe, but probably not. It tells us the share of the variation in our outcome variable that we are able to explain. But it also mechanically increases as we more add more explanatory variables. So it can help us in knowing how much of our outcome variable we are explaining, but it does not help us to choose explanatory variables.
+
+<!-- </noscript> -->
+
+.b[Q22.] Define the term <i>standard error</i>.
+
+<!-- <noscript> -->
+
+.pink[**Answer:**] Standard error is the standard deviation of an estimator's distribution.
+
+<!-- </noscript> -->
+
+.b[Q23.] What does our assumption of <i>exogeneity</i> require? 
+
+<!-- <noscript> -->
+
+.pink[**Answer:**] Our assumption of exogeneity requires that the explanatory variables are uncorrelated with our disturbances. With math: $E[u|x]=0$.
+
+<!-- </noscript> -->
+
+---
+
+.b[Q24.] What does it mean for an estimator to be <i>unbiased</i>?
+
+<!-- <noscript> -->
+
+.pink[**Answer:**] An estimator is unbiased if the meaning of its distribution is equal to the perimeter that it is estimating. In math (for estimator $\hat{\theta}$ and parameter $\theta$): $E[\hat{\theta}] = \theta$.
+
+<!-- </noscript> -->
+
+.b[Q25.] What does it mean for an estimator to be <i>more efficient than another estimator</i>?
+
+<!-- <noscript> -->
+
+.pink[**Answer:**] Estimator 1 is more efficient than estimator 2 if the distribution of estimator 1 has smaller variance than the distribution of estimator 2.
+
+<!-- </noscript> -->
+
+---
+class: clear
+
+## Description of variables and names
+
+<br>
+
+```{r, background variables, echo = F}
+# Load requisite packages
+pacman::p_load(tidyverse, knitr, kableExtra, here)
+# Load data
+acs_sub = here("001-data.rds") %>% read_rds()
+# Create table of variable descriptions
+var_tbl = data.frame(
+  Variable = names(acs_sub) %>% paste0(".mono-small[", ., "]"),
+  Description = c(
+  	"County FIPS code",
+  	"Household size (number of people)",
+  	"Household total income in $10,000",
+  	"Household's total reported cost of housing",
+  	"Household's number of vehicles",
+  	"Share of household members identifying as non-white ethnicities",
+  	"Binary indicator for whether any household members are renters",
+  	"Binary indicator for whether a household member moved in prior 1 year",
+  	"Binary indicator for whether any household member participates in foodstamps",
+  	"Binary indicator for whether a household member owns a smartphone",
+  	"Binary indicator for whether the household has access to the internet",
+  	"Average time spent commuting per day by each household member (minutes)"
+  )
+)
+kable(var_tbl) %>%
+  kable_styling(full_width = F)
+```
+
+In general, I've tried to stick with a naming convention. Variables that begin with .mono-small[i\\_] denote binary indicatory variables (taking on the value of .mono-small[0] or .mono-small[1]). Variables that begin with .mono-small[n_] are numeric variables.
+
+---
+exclude: true
+
+```{r, print pdf, echo = F, eval = F}
+# pagedown::chrome_print("001-questions.html")
+pagedown::chrome_print("001-questions.html", output = "001-solutions.pdf")
+```

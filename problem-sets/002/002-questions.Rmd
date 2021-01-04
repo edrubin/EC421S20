@@ -1,0 +1,378 @@
+---
+title: "Problem Set 2: Heteroskedasticity"
+subtitle: "EC 421: Introduction to Econometrics"
+# author: "Edward Rubin"
+date: "Due *before* midnight on Friday, 01 May 2020"
+# date: ".it.biggest[Solutions]"
+output:
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    # self_contained: true
+    nature:
+      ratio: '8.5:11'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+layout: true
+class: clear
+---
+
+```{r, setup, include = F}
+# Knitr options
+library(knitr)
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(digits = 4)
+options(width = 90)
+```
+
+.mono.b[DUE] Upload your answer on [Canvas](https://canvas.uoregon.edu/) *before* midnight on Friday, 01 May 2020.
+
+.mono.b[IMPORTANT] You must submit .b[two files]:
+<br> .b.mono[1.] your typed responses/answers to the question (in a Word file or something similar)
+<br> .b.mono[2.] the .mono[R] script you used to generate your answers. Each student must turn in her/his own answers.
+
+If you are using [RMarkdown](https://rmarkdown.rstudio.com/), you can turn in one file, but it must be an .mono[HTML] or .mono[PDF] that includes your responses and R code.
+
+.mono.b[README!] As with the first problem set, the data in this problem set come from the 2018 American Community Survey (ACS), which I downloaded from [IPUMS](https://ipums.org/). The last page has a table that describes each variable in the dataset(s).
+
+.mono.b[OBJECTIVE] This problem set has three purposes: (1) reinforce the topics of heteroskedasticity and statistical inference; (2) build your .mono[R] toolset; (3) start building your intuition about causality within econometrics/regression.
+
+.mono.b[INTEGRITY] If you are suspected of cheating, then you will receive a zero. We may report you to the dean.
+
+## Setup 
+
+**Q01.** Load your packages. You'll probably going to need/want `tidyverse` and `here` (among others).
+
+<!-- <noscript> -->
+
+**Answer:**
+	
+```{r, answer01}
+# Load packages
+library(pacman)
+p_load(tidyverse, broom, here)
+```
+
+<!-- </noscript> -->
+
+**Q02.** Now load the data. This time, I saved the same dataset as a single format: a `.csv` file. Use a function that reads `.csv` files—for example, `read.csv()` or `read_csv()` (from the `readr` package in the `tidyverse`.
+
+<!-- <noscript> -->
+
+**Answer:**
+	
+```{r, answer02}
+# Load dataset
+ps_df = here("002-data.csv") %>% read_csv()
+```
+
+<!-- </noscript> -->
+
+---
+
+**Q03.** Check your dataset. Apply the function `summary()` to your dataset. You should have 12 variables.
+
+<!-- <noscript> -->
+
+  **Answer:**
+
+```{r, answer03}
+# Summary of 'ps_df' variables
+summary(ps_df)
+```
+
+<!-- </noscript> -->
+
+**Q04.** Based upon your answer to **Q03**: What are the mean and median of household size (`hh_size`). What does this tell you about the distribution of the variable?
+
+<!-- <noscript> -->
+
+**Answer:** The mean and median of household size are `r mean(ps_df$hh_size) %>% round(3)` and `r median(ps_df$hh_size) %>% round(3)`, respectively. Because the median is relatively larger than the mean it tells us that the right tail of the distribution of household size is skewed—meaning there are a small number of very large households.
+<!-- </noscript> -->
+
+**Q05.** Based upon your answer to **Q03** What are the minimum, maximum, and mean of the indicator for whether a household moved in the last year (`i_moved`)? What does the mean of a binary indicator variable (such as `i_moved`) tell us?
+
+<!-- <noscript> -->
+
+**Answer:** The minimum, maximum, and mean of `i_moved` are `r min(ps_df$hh_size) %>% round(1)`, `r max(ps_df$i_moved) %>% round(1)`, and `r mean(ps_df$i_moved) %>% round(3)`, respectively. 
+
+The mean of a binary indicator variable tells us the share of individuals whose value equals one (here: the share of households that moved in the last year).
+<!-- </noscript> -->
+
+## Time and money
+
+**Q06.** Suppose we are interested in the relationship between a household's housing costs and its time spent commuting. Plot a [scatter plot](http://www.cookbook-r.com/Graphs/Scatterplots_(ggplot2)/) (*e.g.*, using [`geom_point()`](https://ggplot2.tidyverse.org/reference/geom_point.html) from `ggplot2`) with housing cost (`cost_housing`) on the $y$ axis and commute time (`time_commuting`) on the $x$ axis.
+
+Make sure you [label](https://ggplot2.tidyverse.org/reference/labs.html) your axes.
+
+---
+
+<!-- <noscript> -->
+
+**Answer:** 
+	
+```{r, answer06}
+ggplot(data = ps_df, aes(x = time_commuting, y = cost_housing)) +
+geom_point(size = 0.25) + 
+labs(x = "Commute time (minutes)", y = "Monthly cost of housing ($)") +
+theme_minimal()
+```
+
+<!-- </noscript> -->
+
+
+**Q07.** Based your plot in **Q06.**, if we regress housing costs on commute time, do you think we could have an issue with heteroskedasticity? Explain/justify your answer.
+
+<!-- <noscript> -->
+
+**Answer:** We may very well have heteroskedastic disturbances in the given regression: it appears as though the variance of our outcome variable (which depends upon the variance of the disturbance) grows as our explanatory variable grows.
+
+<!-- </noscript> -->
+
+**Q08.** What issues can heteroskedasticity cause? (*Hint:* There are at least two main issues.)
+
+<!-- <noscript> -->
+
+**Answer:** Heteroskedasticity causes our standard errors to be biased (which affects inference—*e.g.*, hypothesis tests, confidence intervals). Heteroskedasticity also makes OLS regression less efficient for estimating coefficients.
+
+<!-- </noscript> -->
+
+**Q09.** Time for a regression. 
+
+Regress *housing cost* (`cost_housing`) on *commute time* (`time_commuting`) and *household income* (`hh_income`). Report your results—interpreting the intercept and coefficients and commenting on their statistical significance.
+
+*Reminder:* The household income variable is measured in tens of thousands (meaning that a value of `3` tells us the household's income is $30,000).
+
+---
+
+<!-- <noscript> -->
+
+**Answer:**
+	
+```{r, answer09}
+# Regression
+est09 = lm(cost_housing ~ time_commuting + hh_income, data = ps_df)
+# Results
+est09 %>% tidy()
+```
+
+We find statistically significant relationships between the cost of housing and each of our explanatory variables—commute time and household income. 
+
+- The intercept tells us the expected cost of housing (`r est09$coef[1]`) for someone with zero commute time and zero income.
+- The coefficient on `time_commuting` tells us an additional minute of commuting is significantly associated with a `r est09$coef[2] %>% scales::dollar(0.001)` increase in the cost of housing.
+- The coefficient on `time_commuting` tells us an additional $10K of household income (1 unit of `hh_income`) is significantly associated with a `r est09$coef[3] %>% scales::dollar(0.001)` increase in the cost of housing.
+
+<!-- </noscript> -->
+
+**Q10.** Use the residuals from your regression in **Q09.** to conduct a Breusch-Pagan test for heteroskedasticity. Do you find significant evidence of heteroskedasticity? Justify your answer.
+
+*Hints* 
+
+1. You can get the residuals from an `lm` object using the `residuals()` function, *e.g.*, `residuals(my_reg)`.
+2. You can get the R-squared from an estimated regression (*e.g.*, a regression called `my_reg`) using `summary(my_reg)$r.squared`.
+
+<!-- <noscript> -->
+
+**Answer:**
+	
+```{r, answer10}
+# Regression for BP test
+est10 = lm(residuals(est09)^2 ~ time_commuting + hh_income, data = ps_df)
+# Results
+est10 %>% tidy()
+# BP test statistic
+lm10 = summary(est10)$r.squared * nrow(ps_df)
+# Test against Chi-squared 2
+pchisq(lm10, df = 2, lower.tail = F) %>% round(3)
+```
+
+The *p*-value is extremely small—nearly zero, so we reject the null hypothesis and conclude that there is statistically significant evidence of heteroskedasticity.
+
+<!-- </noscript> -->
+
+---
+
+**Q11.** Now use your residuals from **Q09** to conduct a White test for heteroskedasticity. Does your conclusion about heteroskedasticity change at all? Explain why you think this is.
+
+*Hints:* Recall that in R
+
+- `lm(y ~ I(x^2))` will regress `y` on `x` squared.
+- `lm(y ~ x1:x2` will regress `y` on the interaction between `x1` and `x2`.
+
+<!-- <noscript> -->
+
+**Answer:**
+	
+```{r, answer11}
+# Regression for BP test
+est11 = lm(
+	residuals(est09)^2 ~
+	time_commuting + hh_income +
+	I(time_commuting^2) + I(hh_income^2) +
+	time_commuting:hh_income,
+	data = ps_df
+)
+# Results
+est11 %>% tidy()
+# BP test statistic
+lm11 = summary(est10)$r.squared * nrow(ps_df)
+# Test against Chi-squared 5
+pchisq(lm11, df = 5, lower.tail = F) %>% round(3)
+```
+
+The *p*-value is still extremely small—nearly zero, so we reject the null hypothesis and conclude that there is statistically significant evidence of heteroskedasticity. The result did not change because we already found strong evidence of heteroskedasticity, and the White test is just a more flexible test for heteroskedasticity.
+
+<!-- </noscript> -->
+
+
+**Q12.** Now conduct a Goldfeld-Quandt test for heteroskedasticity. Do you find significant evidence of heteroskedasticity? Explain why this result makes sense.
+
+**Specifics:**
+
+- We are still interested in the same regression (regressing the cost of housing on commute time and household income).
+- Sort the dataset on **commute time**. The [`arrange()`](https://dplyr.tidyverse.org/reference/arrange.html) should be helpful for this task.
+- Create you two groups for the Goldfeld-Quandt test by using the first **8,000** and last **8,000** observations (after sorting on commute time). The `head()` and `tail()` functions can help here.
+- When you create the Goldfeld-Quandt test statistic, put the larger SSE value in the numerator.
+
+---
+
+<!-- <noscript> -->
+
+**Answer:**
+	
+```{r, answer12}
+# Arrange the dataset by commute time
+ps_df = ps_df %>% arrange(time_commuting)
+# Create the two subsets (first and last 8,000 observations)
+g1 = head(ps_df, 8000)
+g2 = tail(ps_df, 8000)
+# Run the two regressions
+est12_1 = lm(cost_housing ~ time_commuting + hh_income, data = g1)
+est12_2 = lm(cost_housing ~ time_commuting + hh_income, data = g2)
+# Find the SSE from each regression
+sse1 = sum(residuals(est12_1)^2)
+sse2 = sum(residuals(est12_2)^2)
+# GQ test statistic
+gq = sse1 / sse2
+# p-value
+pf(gq, df1 = 8000, df2 = 8000, lower.tail = F)
+```
+
+Using the Goldfeld-Quandt test for heteroskedasticity, we fail to reject the null hypothesis of *homoskedasticity* with a *p*-value of approximately `r pf(gq, df1 = 8000, df2 = 8000, lower.tail = F) %>% round(3)`.
+
+It makes since that we are finding as different result as the Goldfeldt-Quandt test for heteroskedasticity can be very sensitive to the type of heteroskedasticity or to the variable that we choose to consider. In this case, we are considering **only** commute time, when the previous tests also included income.
+
+<!-- </noscript> -->
+
+---
+
+**Q13.** Using the `lm_robust()` function from the `estimatr` package, calculate heteroskedasticity-robust standard errors. How do these heteroskedasticity-robust standard errors compare to the plain OLS standard errors you previously found?
+
+<!-- <noscript> -->
+
+**Answer:**
+
+```{r, answer14}
+# Load estimatr package
+p_load(estimatr)
+# Estimate het-robust standard errors
+lm_robust(
+	cost_housing ~ time_commuting + hh_income,
+	data = ps_df,
+	se_type = "HC2"
+) %>% summary()
+```
+
+The heteroskedasticity-robust standard errors are larger than the OLS standard errors—especially the standard error for household income. The standard error for household income more than doubles. 
+
+<!-- </noscript> -->
+
+Hint: `lm_robust(y ~ x, data = some_df, se_type = "HC2")` will calculate heteroskedasticity-robust standard errors.
+
+**Q14.** Why did your coefficients remain the same in **Q13.**—even though your standard errors changed?
+
+<!-- <noscript> -->
+
+**Answer:** Our coefficients have not changed because we are still using OLS to estimate the coefficients. The thing that has changed is how we calculate the *standard errors* (not the coefficients).
+
+<!-- </noscript> -->
+
+**Q15.** *If* you run weighted least squares (WLS), which the following four possibilities would you expect? Explain your answer.
+
+1. The same coefficients as OLS but different standard errors.
+2. Different coefficients from OLS but the same standard errors.
+3. The same coefficients as OLS *and* the same standard errors.
+4. Different  coefficients from OLS *and* different standard errors.
+
+**Note:** You do not need to run WLS.
+
+<!-- <noscript> -->
+
+**Answer:** With WLS, we would expect our coefficients and standard error to differ from OLS. We expect this because WLS is a different estimator than OLS, which produces different estimates, different residuals, and different standard errors.
+
+<!-- </noscript> -->
+
+---
+
+**Q16.** Does heteroskedasticity appear to matter in this setting? Explain your answer/reasoning.
+
+<!-- <noscript> -->
+
+**Answer:** Heteroskedasticity does appear to be present. It is causing us to over-estimate our precision—especially for the relationship between commute time and income. For example, our $t$ statistic drops from 96 to 43. However, the $t$ statistic of 43 is still highly significant, so adjusting for heterskedasticity doesn't really change our results/understanding much in this setting.
+
+<!-- </noscript> -->
+
+---
+class: clear
+
+## Description of variables and names
+
+<br>
+
+```{r, background variables, echo = F, message = F}
+# Load requisite packages
+pacman::p_load(tidyverse, knitr, kableExtra, here)
+# Load data
+acs_sub = here("002-data.csv") %>% read_csv()
+# Create table of variable descriptions
+var_tbl = data.frame(
+  Variable = names(acs_sub) %>% paste0(".mono-small[", ., "]"),
+  Description = c(
+  	"County FIPS code",
+  	"Household size (number of people)",
+  	"Household total income in $10,000",
+  	"Household's reported monthly cost of housing (dollars)",
+  	"Household's number of vehicles",
+  	"Share of household members identifying as non-white ethnicities",
+  	"Binary indicator for whether any household members are renters",
+  	"Binary indicator for whether a household member moved in prior 1 year",
+  	"Binary indicator for whether any household member participates in foodstamps",
+  	"Binary indicator for whether a household member owns a smartphone",
+  	"Binary indicator for whether the household has access to the internet",
+  	"Average time spent commuting per day by each household member (minutes)"
+  )
+)
+kable(var_tbl) %>%
+  kable_styling(full_width = F)
+```
+
+In general, I've tried to stick with a naming convention. Variables that begin with .mono-small[i\\_] denote binary indicatory variables (taking on the value of .mono-small[0] or .mono-small[1]). Variables that begin with .mono-small[n_] are numeric variables.
+
+---
+exclude: true
+
+```{r, print pdf, echo = F, eval = F}
+pagedown::chrome_print("002-questions.html")
+```

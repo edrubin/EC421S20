@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Problem Set 3 Solutions</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="EC 421: Introduction to Econometrics" />
+    <link href="003-questions_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="003-questions_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="003-questions_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+    <script src="003-questions_files/kePrint-0.0.1/kePrint.js"></script>
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Problem Set 3 Solutions
+## Time Series, Autocorrelation, and Consistency
+### <strong>EC 421:</strong> Introduction to Econometrics
+### <br>Due <em>before</em> midnight (11:59pm) on Friday, 29 May 2020
+
+---
+
+layout: true
+class: clear
+
+---
+
+
+
+&lt;noscript&gt;
+
+.b.mono[DUE] Upload your answer on [Canvas](https://canvas.uoregon.edu/) *before* midnight on Friday, 29 May 2020.
+
+.b.mono[IMPORTANT] You must submit .b[two files]:
+&lt;br&gt; .b.mono[1.] your typed responses/answers to the question (in a Word file or something similar)
+&lt;br&gt; .b.mono[2.] the .mono[R] script you used to generate your answers. Each student must turn in her/his own answers.
+
+If you are using [RMarkdown](https://rmarkdown.rstudio.com/), you can turn in one file, but it must be an .mono[HTML] or .mono[PDF] that includes your responses and R code.
+
+.b.mono[OBJECTIVE] This problem set has three purposes: (1) reinforce the topics of time series and statistical inference; (2) build your .mono[R] toolset; (3) start building your intuition about causality within econometrics/regression.
+
+.b.mono[INTEGRITY] If you are suspected of cheating, then you will receive a zero. We may report you to the dean. Everything you turn in must be in your own words.
+
+&lt;/noscript&gt;
+
+## Conceptual Questions
+
+.b.mono[1.] Remember that we've discussed three types of time-series models: (**1**) static models, (**2**) dynamic models with lagged explanatory variables, (**3**) dynamic models with lagged outcome variables.
+
+.move-right-short[
+.b.mono[1a.] If the disturbance `\(u_t\)` **is not autocorrelated**, for which of the 3 types of models is OLS **unbiased**? &lt;br&gt; If any of the models are biased, explain why.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** If the disturbance **is not autocorrelated**, then OLS is
+- **unbiased** for static models
+- **unbiased** for dynamic models with **lagged explanatory variables**
+- **biased** for dynamic models with **lagged outcome variables** because they violate exogeneity.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[1b.] If the disturbance `\(u_t\)` **is not autocorrelated**, for which of the 3 types of models is OLS **consistent**? &lt;br&gt; If any of the models are inconsistent, explain why.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** If the disturbance **is not autocorrelated**, then OLS is
+- **consistent** for static models
+- **consistent** for dynamic models with **lagged explanatory variables**
+- **consistent** for dynamic models with **lagged outcome variables**
+
+*Note:* We need contemporaneous exogeneity for consistency.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[1c.] If the disturbance `\(u_t\)` **is autocorrelated**, for which of the 3 types of models is OLS **unbiased**? &lt;br&gt; If any of the models are biased, explain why.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** If the disturbance **is not autocorrelated**, then OLS is
+- **unbiased** for static models
+- **unbiased** for dynamic models with **lagged explanatory variables**
+- **biased** for dynamic models with **lagged outcome variables** because they violate exogeneity.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[1d.] If the disturbance `\(u_t\)` **is autocorrelated**, for which of the 3 types of models is OLS **consistent**? &lt;br&gt; If any of the models are inconsistent, explain why.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** If the disturbance **is not autocorrelated**, then OLS is
+- **consistent** for static models
+- **consistent** for dynamic models with **lagged explanatory variables**
+- **inconsistent** for dynamic models with **lagged outcome variables** because they violate contemporaneous exogeneity
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+]
+
+.b.mono[2.] In our time-series lecture, we discussed how static time-series models are a pretty restrictive and simplistic way to model time-series data.
+
+.move-right-short[
+.b.mono[2a.] Explain why static time-series models are generally restrictive and simplistic.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** Static models assume (1) that all explanatory variables only affect our outcome for exactly one period (the current period) and (2) the outcome variable in the current period is not affected by the outcomes in previous periods. In other words: We are saying that all variables have immediate effects and then no future effects.
+
+This approach to modeling is restrictive because many variables likely have effects for many periods and some outcome variables are affected by previous outcomes.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+]
+
+---
+
+.move-right-short[
+.b.mono[2b.] Give an example of a reasonable **static** time-series model. By *reasonable* we mean that it would be reasonable to model the relationship as a static relationship. Explain why it is reasonable to model the relationship as static rather than dynamic—and make sure you tell us what `\(t\)` would represent (*e.g.*, days, months, years).
+
+*Note:* The model should look something like `\(\text{Births}_t = \beta_0 + \beta_1 \text{Income}_t + u_t\)`
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** You have a lot of options here. One example:
+
+$$
+`\begin{align}
+  \text{Yield}_t = \beta_0 + \beta_1 \text{Temperature}_t + \beta_2 \text{Precipitation}_t + \beta_3 (\text{Soil Quality})_t + u_t
+\end{align}`
+$$
+
+Imagining that `\(t\)` represents years, we might expect that one year's crop yield mainly depends upon the conditions during its growing season. That said, we still *may* want to consider dynamics even for this model...
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[2c.] Give an example of a reasonable **dynamic** time-series model. By *reasonable* we mean that it would be reasonable to model the relationship as a dynamic relationship. Explain why this relationship should be modeled as a dynamic relationship. Make sure you tell us what `\(t\)` would represent (*e.g.*, days, months, years).
+
+*Note:* The model should look something like `\(\text{Births}_t = \beta_0 + \beta_1 \text{Income}_t + \text{Income}_{t-1} + u_t\)`
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** Again, you have a lot of options here. Here's one example of a clearly dynamic model:
+
+$$
+`\begin{align}
+  \text{Population}_t = \beta_0 + \beta_1 \text{Population}_{t-1} + \beta_2 \text{Births}_{t} + \beta_3 \text{Deaths}_{t} + \beta_4 \text{Migration}_{t} + u_t
+\end{align}`
+$$
+
+We definitely want population in year `\(t\)` to depend upon the previous year's population—plus the effects of births, deaths, and net migration in the current year.
+
+*Note:* This model is a bit silly, as it is essentially an accounting exercise: `\(\beta_0\)` should be zero, and the rest of the coefficients should be 1. The randomness in the model mainly comes from measurement error.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+]
+
+.b.mono[3.] Time-series models frequently include the lag of a variable, *e.g.*, `\(x_{t-1}\)`. Explain why we usually do not use lags in cross-sectional models, *e.g.*, `\(x_{i-1}\)`.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** We typically do not include lags in cross-sectional models because that would say that individual `\(i\)`'s outcome `\(\left(y_i\right)\)` depends upon individual `\(i-1\)`'s explanatory variable `\(\left(x_{i-1}\right)\)`. There *are* situations where one person's outcome depends on other people's explanatory variables, but we often ignore this possibility. 
+
+In addition: The dataset must be organized in a manner so that individual `\(i\)` is affected by `\(i-1\)`'s explanatory variable. Often `\(i\)` is a meaningless index for "individual".
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+## Some Real Data
+
+&lt;noscript&gt;
+
+Now we're going to work with some real data. The data come from the Environmental Protection Agency (EPA). Specifically, the data describe electricity generation in the United States at a monthly level—the amount of electricity generated, associated emissions, the number of retirements, *etc.*
+
+For more information on the dataset, see the table on the last page of this problem set.
+
+**Why?** Electricity generation is obviously important for day-to-day life: it runs our heating and air conditioning, it allows us to have computers/phones/internet/refrigerators/*etc.*, and it supports many businesses and critical parts of our health systems and economy. 
+
+Emissions are important, because burning fossil fuels (*e.g.*, coal and natural gas) produces toxic gases that are released above the plant. These gases (emissions) have been traced to a bunch of negative outcomes—for people, animals, plants, and the general environment (*e.g.*, acid rain). Economics is about thinking on the margin: Where do the marginal benefits from something equal the marginal costs? We know we need electricity, so we do not want to make it too expensive for electricity generators to operate, but if we do not regulate electricity generation, then the power plants may poison our air and water. Thus, one job of economists (specially environmental and energy economists) is figuring out how regulations affect health, environment, and energy costs.
+
+&lt;/noscript&gt;
+
+.b.mono[4.] Load packages and your dataset `003-data.csv`.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:**
+  
+
+```r
+# Packages
+library(pacman)
+p_load(broom, tidyverse, patchwork, magrittr, here)
+# Load the data
+gen_df = read_csv("003-data.csv")
+```
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[5.] Which dates does the dataset cover (what are the start and end dates)? How many months?
+
+&lt;!-- &lt;noscript&gt; --&gt;
+  
+**Answer:** The data cover 174 months—starting with 2005-01-01 and ending with 2019-06-01.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[6.] How many plants retired during this sample?
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** 1,051 plants retired during the sample period. `gen_df$cumulative_retirements %&gt;% tail(1)`
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[7.] Create (and include) **three figures**: (**1**) the time series of total monthly generation (`generation_gwh`), (**2**) the time series of NO.sub[x] (Nitrogen Oxide) emissions (`emissions_nox`), and (**3**) the time series for the number of electricity generators who retired in the given month (`n_retirements`).
+
+*Hint:* A time-series graph has time on the `\(x\)` axis and a variable on the `\(y\)` axis. Your `\(x\)` axis can have either time `t` (time relative to the beginning of the sample) or date (`month`).
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:**
+
+
+```r
+# Figure 1
+f7.1 = ggplot(data = gen_df, aes(x = month, y = generation_gwh)) +
+geom_line(size = 0.3) +
+geom_point(size = 2.5) +
+scale_x_date("Month") +
+scale_y_continuous("Monthly generation (GWH)", labels = scales::comma) +
+ggtitle("Electricity generation") +
+theme_minimal()
+# Figure 2
+f7.2 = ggplot(data = gen_df, aes(x = month, y = emissions_nox)) +
+geom_line(size = 0.3) +
+geom_point(size = 2.5) +
+scale_x_date("Month") +
+scale_y_continuous("NOx emissions", labels = scales::comma) +
+ggtitle("NOx emissions") +
+theme_minimal()
+# Figure 3
+f7.3 = ggplot(data = gen_df, aes(x = month, y = n_retirements)) +
+geom_line(size = 0.3) +
+geom_point(size = 2.5) +
+scale_x_date("Month") +
+scale_y_continuous("Number of retired units", labels = scales::comma) +
+ggtitle("Monthly retirements") +
+theme_minimal()
+# Plot together
+f7.1 / f7.2 / f7.3
+```
+
+*Figures on next page.*
+
+---
+
+&lt;img src="003-questions_files/figure-html/ans07-out-1.svg" style="display: block; margin: auto;" /&gt;
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[8.] For each of the three time-series graphs in .b.mono[7], explain whether the variable appears to be positively autocorrelated, negatively autocorrelated, or *not* autocorrelated. Make sure you explain your reasoning.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** Each of the time series appears to have positive autocorrelation—especially electricity generation and NO.sub[x] emissions. It is likely positive because the level in one month is typically close to the level in the previous month.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[9.] Estimate a **static** time-series model where monthly *NO.sub[x] emissions* (`emissions_nox`) are the outcome variable and our two explanatory variables are the *number of retirements* in the month (`n_retirements`) and the amount of electricity generation in the month (`generation_gwh`).
+
+Report your coefficient estimates and their statistical significance.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:**
+
+
+```r
+# Estimate the model
+model09 = lm(emissions_nox ~ n_retirements + generation_gwh, data = gen_df)
+# The results
+model09 %&gt;% tidy()
+```
+
+```
+#&gt; # A tibble: 3 x 5
+#&gt;   term            estimate std.error statistic  p.value
+#&gt;   &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1 (Intercept)    -73519.   34319.        -2.14 3.36e- 2
+#&gt; 2 n_retirements   -1657.     587.        -2.82 5.33e- 3
+#&gt; 3 generation_gwh      1.10     0.140      7.81 5.56e-13
+```
+
+Based upon the coefficient on `n_retirements`, this simple static model suggests that an additional retirement typically reduced NO.sub[x] emissions by 1,657 tons, on average, holding all else constant. The second coefficient suggests that an additional GWh of generation is associated with a 1 ton increase in NO.sub[2] emissions, on average, holding all else constant. Both effects are statistically significant at the 5% level.
+
+---
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[10.] Now estimate a **dynamic** model in which you include the first lag for each of your explanatory variables (number of retirements and amount of electricity generation). *Note:* You still want the non-lagged version of the variables too—*i.e.*, include `\(x_t\)` *and* `\(x_{t-1}\)`. Interpret the coefficient on the lagged number of retirements.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:**
+
+
+```r
+# Estimate the model
+model10 = lm(
+  emissions_nox ~
+  n_retirements + lag(n_retirements) + generation_gwh + lag(generation_gwh),
+  data = gen_df
+)
+# The results
+model10 %&gt;% tidy()
+```
+
+```
+#&gt; # A tibble: 5 x 5
+#&gt;   term                  estimate std.error statistic     p.value
+#&gt;   &lt;chr&gt;                    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;
+#&gt; 1 (Intercept)         -78742.    37030.       -2.13  0.0349     
+#&gt; 2 n_retirements        -1213.      580.       -2.09  0.0382     
+#&gt; 3 lag(n_retirements)   -1601.      567.       -2.83  0.00529    
+#&gt; 4 generation_gwh           0.949     0.187     5.08  0.000000980
+#&gt; 5 lag(generation_gwh)      0.193     0.195     0.988 0.324
+```
+
+The coefficient on the lagged number of retirements—*i.e.*, `lag(n_retirements)`—says that an additional retirement **in the previous month** is associated with reduced NO.sub[x] emissions of 1 tons, on average, holding all else constant. 
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[11.] Why might it make sense to include lags of the variable *number of retirements*? In other words: Why might we want a dynamic model with lagged explanatory variables in this setting?
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** We may want a dynamic model with the lagged number of retirements because the effect of a retirement is likely a long-term, sustained effect: once a plant retires, those emissions may be gone (to some extent) forever.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[12.] If the disturbance is autocorrelated, what problems does it cause for OLS regression estimates in .b.mono[10]?
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** If .b.mono[10] has an autocorrelated disturbance, then OLS is inefficient and has biased standard-error estimates.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[13.] Use the residuals from the regression in .b.mono[10] to test for first-order autocorrelation in your disturbance. Report the results from the hypothesis test.
+
+*Hint:* Don't forget about the missing values due to lags (see lecture notes).
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:**
+
+
+```r
+# Add residuals to dataset
+gen_df$e10 = c(NA, residuals(model10))
+# Regress residuals on their first lag
+model13 = lm(e10 ~ -1 + lag(e10), data = gen_df)
+# Results
+tidy(model13)
+```
+
+```
+#&gt; # A tibble: 1 x 5
+#&gt;   term     estimate std.error statistic  p.value
+#&gt;   &lt;chr&gt;       &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1 lag(e10)    0.870    0.0352      24.7 2.16e-58
+```
+
+Our test finds highly significant evidence of first-order autocorrelation.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+.b.mono[14.] Now estimate a dynamic model (still with NO.sub[x] emissions as the outcome variable) with **0, 1, 2, and 3** lags of the **number of retirements** and also the current month's electricity generation (no lags). Interpret the coefficient on the third lag of the number of retirements.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** 
+
+
+```r
+# Estimate the model
+model14 = lm(
+  emissions_nox ~
+  n_retirements + lag(n_retirements) + lag(n_retirements, 2) +
+  lag(n_retirements, 3) + generation_gwh,
+  data = gen_df
+)
+# The results
+model14 %&gt;% tidy()
+```
+
+```
+#&gt; # A tibble: 6 x 5
+#&gt;   term                   estimate std.error statistic  p.value
+#&gt;   &lt;chr&gt;                     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1 (Intercept)           -48727.   30888.        -1.58 1.17e- 1
+#&gt; 2 n_retirements          -1135.     519.        -2.18 3.03e- 2
+#&gt; 3 lag(n_retirements)     -1398.     513.        -2.72 7.15e- 3
+#&gt; 4 lag(n_retirements, 2)  -1362.     514.        -2.65 8.88e- 3
+#&gt; 5 lag(n_retirements, 3)  -1591.     509.        -3.13 2.09e- 3
+#&gt; 6 generation_gwh             1.07     0.123      8.73 2.63e-15
+```
+
+The coefficient on the third lag of the number of retirements tells us that an additional retirement **three months ago**, holding all else constant, is associated with a 1,591 ton reduction in NO.sub[x] emissions. This effect is statistically significant at the 5% level.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[15.] Based upon your estimates in .b.mono[14], what is the *total* effect of a retirement on NO.sub[x] emissions?
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** Based upon the model in .b.mono[15], the total effect of a retirement on NO.sub[x] emissions, holding all else constant, is a reduction of 5,487 tons of NO.sub[x] emissions (the sum of the coefficients). 
+
+*Note:* This estimate essentially assumes that the effect is gone after four months, which is not likely.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[16.] Now estimate an ADL(1,1) model with NO.sub[x] emissions as the outcome and with *number of retirements* and *electricity generation* as the explanatory variables. Report/interpret the coefficient on the lag of NO.sub[x] emissions.
+
+*Hint:* Your regression should have an intercept plus five more terms.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:**
+
+
+```r
+# Estimate the model
+model16 = lm(
+  emissions_nox ~ lag(emissions_nox) +
+  n_retirements + lag(n_retirements) + generation_gwh + lag(generation_gwh),
+  data = gen_df
+)
+# The results
+model16 %&gt;% tidy()
+```
+
+*Output on next page*
+
+---
+
+
+```
+#&gt; # A tibble: 6 x 5
+#&gt;   term                  estimate  std.error statistic  p.value
+#&gt;   &lt;chr&gt;                    &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1 (Intercept)         -19355.    11249.       -1.72   8.72e- 2
+#&gt; 2 lag(emissions_nox)       0.925     0.0226   41.0    3.78e-89
+#&gt; 3 n_retirements          -13.6     177.       -0.0767 9.39e- 1
+#&gt; 4 lag(n_retirements)     -87.9     175.       -0.504  6.15e- 1
+#&gt; 5 generation_gwh           0.645     0.0567   11.4    1.47e-22
+#&gt; 6 lag(generation_gwh)     -0.512     0.0612   -8.37   2.28e-14
+```
+
+The coefficient on the lag of NO.sub[x] emissions tells us that a one-ton increase in NO.sub[x] emissions in the previous month is associated with a 0.925-ton increase in NO.sub[x] emissions in the current month. This relationship is very statistically significant. The relationship says that our outcome is strongly correlated with itself in time.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[17.] Does it make sense to regress current NO.sub[x] emissions on the previous month's emissions? Explain your answer.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** Probably not... though it's difficult. One reason **not** to do it is that last month's emissions are unlikely to actually affect this month's emissions. The emissions are coming from generating electricity—not from last month's emissions.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[18.] If the disturbance is autocorrelated, then OLS is not consistent for the coefficients in .b.mono[16]. Explain how you could test for an autocorrelated disturbance using the model from .b.mono[16]. 
+
+*Note:* You do not actually need to run this test. 
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** To test for an autocorrelated disturbance in .b.mono[16], we want to run a Breusch-Godfrey test, which regresses the residuals from .b.mono[16] on their lags **and** on the explanatory variables (RHS variables) from .b.mono[16.]. It then tests the significance of the coefficients on the lagged residuals.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[19.] Try to find the "best" model for explaining the relationship between monthly NO.sub[x] emissions (your outcome variable) and retirements. Include lags, other variables, interactions, logs—whatever you want. Report your final model and explain why you chose it.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** Lots of options here. We're looking for explanation and effort.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+.b.mono[20.] Return to your figures in .b.mono[7]: Do any of the three figures suggest a violation of mean stationarity? Explain.
+
+&lt;!-- &lt;noscript&gt; --&gt;
+
+**Answer:** NO.sub[x] emissions appear to violate mean stationarity: The mean is decreasing over time.
+
+&lt;!-- &lt;/noscript&gt; --&gt;
+
+---
+
+## Description of Variables
+
+.white[b]
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Variable &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Description &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[t] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Time, relative to the first month of the sample (1, 2, ...) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[month] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Month of the sample (e.g., 2015-12-01) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[generation_gwh] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Total monthly electricity generation (Gigawatt hours, GWh) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[emissions_so2] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Total monthly emissions of SO.sub[2] (in tons) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[emissions_nox] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Total monthly emissions of NO.sub[x] (in tons) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[n_plants] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Number of unique electricity-generating units (EGUs) operating in the month &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[n_retirements] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Number of retired electricity generating units in the month &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[cumulative_retirements] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Cumulative number of retirements (through the given month) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[i_cair] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator for months during the Clean Air Interstate Rule (CAIR) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; .mono-small[i_csapr] &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Binary indicator for months during the Cross-State Air Pollution Rule (CSAPR) &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+exclude: true
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "8.5:11",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
