@@ -29,6 +29,8 @@ The slides below (linked by their topic) are .html files that will only work pro
 
 ## Midterm
 
+**Midterm exam**
+
 - [Topics](https://raw.githack.com/edrubin/EC421S20/master/midterm/topics/midterm-topics.pdf): topics that were fair game for the exam
 - [Review questions](https://raw.githack.com/edrubin/EC421S20/master/midterm/review/midterm-review.pdf): no solutions; just review questions
 - Midterms from my previous classes
@@ -39,6 +41,8 @@ The slides below (linked by their topic) are .html files that will only work pro
   - [Winter 2020](https://raw.githack.com/edrubin/EC421S20/master/midterm/past/midterm-2020w.pdf)
   - [Winter 2020 solutions](https://raw.githack.com/edrubin/EC421S20/master/midterm/past/midterm-2020w-key.pdf)
   - [Spring 2020 (no solutions)](https://raw.githack.com/edrubin/EC421S20/master/midterm/exam/exam-screenshots.pdf)
+
+**Midterm project:** [Prompt](https://raw.githack.com/edrubin/EC421S20/master/projects/project-1/prompt.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/projects/project-1/proj1.csv)
 
 ## Final
 
