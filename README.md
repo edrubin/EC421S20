@@ -22,27 +22,32 @@ The slides below (linked by their topic) are .html files that will only work pro
 
 ## Problem sets
 
-1. [Problem set 1: Review of OLS](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001-assignment.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001-solutions.pdf)
-2. [Problem set 2: Heteroskedasticity, consistency, and time series](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002-assignment.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002-solutions.pdf)
-3. [Problem set 3: Time series and autocorrelation](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003-assignment.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003-solutions.pdf)
-4. [Problem set 4: Nonstationarity, causality, and instrumental variables](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004-assignment.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004-solutions.pdf)
+1. [Problem set 1: Review of OLS](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001/001-problems.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001/001-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001/001-solutions.pdf)
+2. [Problem set 2: Heteroskedasticity, consistency, and time series](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002/002-problems.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002/002-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002/002-solutions.pdf)
+3. [Problem set 3: Time series and autocorrelation](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003/003-problems.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003/003-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003/003-solutions.pdf)
+4. [Problem set 4: Nonstationarity, causality, and instrumental variables](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004/004-problems.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004/004-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004/004-solutions.pdf)
 
 ## Midterm
 
-- [Topics](https://raw.githack.com/edrubin/EC421S20/master/midterm/midterm-prep/midterm_topics.pdf): topics that were fair game for the exam
-- [Review questions](https://raw.githack.com/edrubin/EC421S20/master/midterm-prep/midterm_review.pdf): no solutions; just review questions
+- [Topics](https://raw.githack.com/edrubin/EC421S20/master/midterm/topics/midterm-topics.pdf): topics that were fair game for the exam
+- [Review questions](https://raw.githack.com/edrubin/EC421S20/master/midterm/review/midterm-review.pdf): no solutions; just review questions
 - Midterms from my previous classes
-  - [Exam 1](https://raw.githack.com/edrubin/EC421S20/master/midterms-previous/practice_exam.pdf)
-  - [Exam 1 solutions](https://raw.githack.com/edrubin/EC421S20/master/midterms-previous/practice_exam_key.pdf)
-  - [Exam 1](https://raw.githack.com/edrubin/EC421S20/master/midterms-previous/practice_exam2.pdf)
-  - [Exam 1 solutions](https://raw.githack.com/edrubin/EC421S20/master/midterms-previous/practice_exam2_key.pdf)
-- [Midterm](https://raw.githack.com/edrubin/EC421S20/master/midterm/midterm.pdf): the actual exam
-- [Solutions](https://raw.githack.com/edrubin/EC421S20/master/midterm/midterm-solutions.pdf): short solutions to the midterm
+  - [Winter 2019](https://raw.githack.com/edrubin/EC421S20/master/midterm/past/midterm-2019w.pdf)
+  - [Winter 2019 solutions](https://raw.githack.com/edrubin/EC421S20/master/midterm/past/midterm-2019w-key.pdf)
+  - [Spring 2019](https://raw.githack.com/edrubin/EC421S20/master/midterm/past/midterm-2019s.pdf)
+  - [Spring 2019 solutions](https://raw.githack.com/edrubin/EC421S20/master/midterm/past/midterm-2019s-key.pdf)
+  - [Winter 2020](https://raw.githack.com/edrubin/EC421S20/master/midterm/past/midterm-2020w.pdf)
+  - [Winter 2020 solutions](https://raw.githack.com/edrubin/EC421S20/master/midterm/past/midterm-2020w-key.pdf)
+  - [Spring 2020 (no solutions)](https://raw.githack.com/edrubin/EC421S20/master/midterm/exam/exam-screenshots.pdf)
 
 ## Final
 
-- [Review questions](https://raw.githack.com/edrubin/EC421S20/master/final/final-prep/final-review.pdf): no solutions; just review questions
-- [Previous final](https://raw.githack.com/edrubin/EC421S20/master/final/final-prep/final-previous.pdf)
-- [Previous final, solutions](https://raw.githack.com/edrubin/EC421S20/master/final/final-prep/final-previous-key.pdf)
-- [Final](https://raw.githack.com/edrubin/EC421S20/master/final/final.pdf): the actual exam
-- [Solutions](https://raw.githack.com/edrubin/EC421S20/master/final/final-solutions.pdf): solution key to the final
+- [Topics](https://raw.githack.com/edrubin/EC421S20/master/final/topics/final-topics.pdf): topics that were fair game for the exam
+- [Review questions](https://raw.githack.com/edrubin/EC421S20/master/final/review/final-review.pdf): no solutions; just review questions
+- Finals from my previous classes
+  - [Winter 2019](https://raw.githack.com/edrubin/EC421S20/master/final/past/final-2019w.pdf)
+  - [Winter 2019 solutions](https://raw.githack.com/edrubin/EC421S20/master/final/past/final-2019w-key.pdf)
+  - [Spring 2019](https://raw.githack.com/edrubin/EC421S20/master/final/past/final-2019s.pdf)
+  - [Spring 2019 solutions](https://raw.githack.com/edrubin/EC421S20/master/final/past/final-2019s-key.pdf)
+  - [Winter 2020](https://raw.githack.com/edrubin/EC421S20/master/final/past/final-2020w.pdf)
+  - [Winter 2020 solutions](https://raw.githack.com/edrubin/EC421S20/master/final/past/final-2020w-key.pdf)
