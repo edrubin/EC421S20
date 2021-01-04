@@ -22,10 +22,10 @@ The slides below (linked by their topic) are .html files that will only work pro
 
 ## Problem sets
 
-1. [Problem set 1: Review of OLS](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001/001-problems.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001/001-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001/001-solutions.pdf)
-2. [Problem set 2: Heteroskedasticity, consistency, and time series](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002/002-problems.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002/002-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002/002-solutions.pdf)
-3. [Problem set 3: Time series and autocorrelation](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003/003-problems.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003/003-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003/003-solutions.pdf)
-4. [Problem set 4: Nonstationarity, causality, and instrumental variables](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004/004-problems.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004/004-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004/004-solutions.pdf)
+1. [Problem set 1: Review of OLS](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001/001-questions.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001/001-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/001/001-solutions.pdf)
+2. [Problem set 2: Heteroskedasticity, consistency, and time series](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002/002-questions.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002/002-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/002/002-solutions.pdf)
+3. [Problem set 3: Time series and autocorrelation](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003/003-questions.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003/003-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/003/003-solutions.pdf)
+4. [Problem set 4: Nonstationarity, causality, and instrumental variables](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004/004-questions.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004/004-data.csv) | [Solutions](https://raw.githack.com/edrubin/EC421S20/master/problem-sets/004/004-solutions.pdf)
 
 ## Midterm
 
