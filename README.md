@@ -42,7 +42,7 @@ The slides below (linked by their topic) are .html files that will only work pro
   - [Winter 2020 solutions](https://raw.githack.com/edrubin/EC421S20/master/midterm/past/midterm-2020w-key.pdf)
   - [Spring 2020 (no solutions)](https://raw.githack.com/edrubin/EC421S20/master/midterm/exam/exam-screenshots.pdf)
 
-**Midterm project:** [Prompt](https://raw.githack.com/edrubin/EC421S20/master/projects/project-1/prompt.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/projects/project-1/proj1.csv)
+**Midterm project:** [Prompt](https://raw.githack.com/edrubin/EC421S20/master/projects/project-1/project1.pdf) | [Data](https://raw.githack.com/edrubin/EC421S20/master/projects/project-1/proj1.csv)
 
 ## Final
 
