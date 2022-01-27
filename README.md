@@ -31,6 +31,7 @@ The slides below (linked by their topic) are .html files that will only work pro
 
 **Midterm exam**
 
+- [**The exam**](https://raw.githack.com/edrubin/EC421S20/master/midterm/exam/exam-screenshots.pdf)
 - [Topics](https://raw.githack.com/edrubin/EC421S20/master/midterm/topics/midterm-topics.pdf): topics that were fair game for the exam
 - [Review questions](https://raw.githack.com/edrubin/EC421S20/master/midterm/review/midterm-review.pdf): no solutions; just review questions
 - Midterms from my previous classes
